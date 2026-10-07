@@ -1,0 +1,20 @@
+# data, models and secrets never go to GitHub
+service/data/
+service/images/
+**/*.npz
+**/*.db
+**/*.pkl
+**/qdrant/
+**/review_photos/
+**/patches/
+**/faq/
+**/export/
+**/scene_export/
+.env
+*.env
+api_key.txt
+admin_auth.json
+__pycache__/
+*.pyc
+.DS_Store
+Thumbs.db

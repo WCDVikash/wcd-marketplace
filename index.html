@@ -1528,6 +1528,14 @@
   .tj-tools button[data-tool].on{background:var(--ink);border-color:var(--ink)} .tj-tag{color:var(--teal-700)}
   .tr-login::before{background:linear-gradient(90deg,var(--coral),var(--saffron),var(--teal),var(--indigo))} .tr-login::after{display:none}
   /* leaderboard: KPI tiles and bar charts */
+  .tag-pairs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px} .tag-pairs .tr-btn b{margin-left:6px;opacity:.7}
+  .tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px}
+  .tag-card{padding:0;overflow:hidden} .tag-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:zoom-in}
+  .tag-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:8px} .tag-body>b{font-size:14px}
+  .tag-choice{display:grid;grid-template-columns:1fr 1fr;gap:8px} .tag-choice .tr-btn{flex-direction:column;gap:0;line-height:1.1;padding:10px 6px;min-height:52px;font-size:14px} .tag-choice .tr-btn small{font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;opacity:.65;margin-top:3px}
+  .tag-choice .tr-btn.his:hover{border-color:var(--saffron);background:#FFF1C2} .tag-choice .tr-btn.eng:hover{border-color:var(--teal);background:#E0F7F6}
+  .tag-other{min-height:38px;border:1px solid var(--sand-200);border-radius:10px;padding:6px 10px;font-size:13px;background:var(--paper);color:var(--ink)}
+  @media(max-width:560px){.tag-grid{grid-template-columns:1fr 1fr;gap:10px}}
   .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;background:transparent;box-shadow:none;padding:0;border:0}
   .kpi{border-radius:18px;padding:18px 18px 16px;color:#fff;position:relative;overflow:hidden} .kpi b{display:block;font-family:Manrope,sans-serif;font-weight:800;font-size:34px;line-height:1;letter-spacing:-.02em} .kpi span{display:block;font-size:12.5px;margin-top:8px;opacity:.92;line-height:1.4}
   .kpi.coral{background:var(--coral)} .kpi.teal{background:var(--teal)} .kpi.saffron{background:var(--saffron);color:var(--ink)} .kpi.indigo{background:var(--indigo)} .kpi.plum{background:var(--plum)}
@@ -3352,10 +3360,11 @@ function renderTraining(){
         <input id="pwNew" type="password" placeholder="New password (6+ characters)" required>
         <button class="tr-btn primary" type="submit">Save</button><span class="tr-msg" id="pwMsg"></span></form></div>
     <div class="tr-panel" id="trAdmin" style="display:none"></div>
-    <div class="tr-tabs"><button class="on" data-tr="designs" onclick="trTab('designs')">Today's designs</button><button data-tr="photos" onclick="trTab('photos')">Customer photos</button><button data-tr="board" onclick="trTab('board')">Leaderboard</button></div>
+    <div class="tr-tabs"><button class="on" data-tr="designs" onclick="trTab('designs')">Today's designs</button><button data-tr="photos" onclick="trTab('photos')">Customer photos</button><button data-tr="board" onclick="trTab('board')">Leaderboard</button><button data-tr="tags" onclick="trTab('tags')">Pattern review</button></div>
     <div id="trDesigns"><div id="gmList" class="tr-list"></div><div id="gmJudge" class="tr-judge" style="display:none"></div></div>
     <div id="trPhotos" style="display:none"><div id="trList" class="tr-list"></div><div id="trJudge" class="tr-judge" style="display:none"></div></div>
-    <div id="trBoard" style="display:none"></div>`;
+    <div id="trBoard" style="display:none"></div>
+    <div id="trTags" style="display:none"></div>`;
   loadToday(); loadGame();
 }
 function trTab(which){
@@ -3363,7 +3372,9 @@ function trTab(which){
   document.getElementById("trDesigns").style.display = which === "designs" ? "" : "none";
   document.getElementById("trPhotos").style.display = which === "photos" ? "" : "none";
   document.getElementById("trBoard").style.display = which === "board" ? "" : "none";
+  document.getElementById("trTags").style.display = which === "tags" ? "" : "none";
   if(which === "board") loadBoard();
+  if(which === "tags") loadTags();
 }
 /* ---- daily design game: 10 catalogue designs, ✓/✗ on the engine's similar designs ---- */
 const GAME = { today:null, cur:null, marks:{}, aspect:"both" };
@@ -3431,6 +3442,37 @@ async function gmSkip(){ try{ await staffFetch("/game/skip", {method:"POST", bod
 function closeGame(next){
   document.getElementById("gmJudge").style.display = "none"; document.getElementById("gmList").style.display = "";
   loadGame().then(()=>{ if(next && GAME.today){ const nx = GAME.today.items.find(it => it.status === "todo"); if(nx) openGame(nx.ref_sku); else { toast("All designs done for today. Thank you"); trTab("board"); } } });
+}
+/* ---- pattern review: where his tagger and our engine disagree, a person decides, with the picture in front of them ---- */
+const TAGS = { filter: "" };
+async function loadTags(){
+  const el = document.getElementById("trTags"); el.innerHTML = "Loading…";
+  let d; try{ d = await staffFetch("/training/tagreview?limit=12" + (TAGS.filter ? "&pattern=" + encodeURIComponent(TAGS.filter) : "")); }catch(e){ el.innerHTML = "Could not load"; return; }
+  const pairs = (d.pairs || []).map(([k, n]) => `<button class="tr-btn sm ${TAGS.filter && k.includes(TAGS.filter) ? "primary" : ""}" onclick="tagFilter('${esc(k.split(" vs ")[0])}')">${esc(k)} <b>${n}</b></button>`).join("");
+  el.innerHTML = `<div class="tr-panel">
+      <h4>Pattern review <span class="tr-msg">· ${d.todo.toLocaleString()} to decide · ${d.decided.toLocaleString()} decided</span></h4>
+      <p class="tr-msg">Two systems tagged these designs with a different pattern. Look at the picture and pick the pattern a dealer would use to find it. Your decision applies on the website tonight and shows in the central sheet.</p>
+      <div class="tag-pairs">${TAGS.filter ? `<button class="tr-btn sm" onclick="tagFilter('')">All pairs</button>` : ""}${pairs}</div>
+    </div>
+    <div class="tag-grid">${(d.items || []).map(r => tagCard(r, d.patterns)).join("") || `<div class="pm-empty">Nothing left to decide${TAGS.filter ? " for " + esc(TAGS.filter) : ""}. Thank you.</div>`}</div>`;
+  MOTION.cards(el.querySelector(".tag-grid"), {each: .04});
+}
+function tagFilter(p){ TAGS.filter = p; loadTags(); }
+function tagCard(r, patterns){
+  const p = byId.get(r.SKU) || {}; const img = p.i || r.Image || "";
+  return `<div class="tag-card tr-panel" data-sku="${esc(r.SKU)}">
+    <img src="${esc(img)}" alt="" loading="lazy" onclick="openViewer('${esc(img)}','${esc(r.SKU)}')" onerror="imgFail(this)">
+    <div class="tag-body"><b>${esc(r.SKU)}</b><span class="tr-msg">${esc(r["Product Type"] || "")}${r["His Colours"] ? " · " + esc(r["His Colours"]) : ""}</span>
+      <div class="tag-choice"><button class="tr-btn his" onclick="tagDecide('${esc(r.SKU)}','his','${esc(r["His Pattern"])}','${esc(r["Engine Pattern"])}')">${esc(r["His Pattern"])}<small>tagger</small></button>
+        <button class="tr-btn eng" onclick="tagDecide('${esc(r.SKU)}','engine','${esc(r["His Pattern"])}','${esc(r["Engine Pattern"])}')">${esc(r["Engine Pattern"])}<small>engine</small></button></div>
+      <select class="tag-other" onchange="if(this.value) tagDecide('${esc(r.SKU)}', this.value, '${esc(r["His Pattern"])}', '${esc(r["Engine Pattern"])}')"><option value="">Neither: pick another…</option>${patterns.filter(x => x !== r["His Pattern"] && x !== r["Engine Pattern"]).map(x => `<option>${esc(x)}</option>`).join("")}</select>
+    </div></div>`;
+}
+async function tagDecide(sku, decision, his, engine){
+  const card = document.querySelector(`.tag-card[data-sku="${CSS.escape(sku)}"]`);
+  try{ await staffFetch("/training/tagdecide", {method:"POST", body: JSON.stringify({sku, decision, his, engine})});
+    if(card) MOTION.fold(card, () => { if(!document.querySelector(".tag-card")) loadTags(); }); toast("Saved: " + sku + " → " + (decision === "his" ? his : decision === "engine" ? engine : decision));
+  }catch(e){ toast("Could not save"); }
 }
 /* ---- leaderboard / personal progress ---- */
 async function loadBoard(){

@@ -1528,6 +1528,14 @@
   .tj-tools button[data-tool].on{background:var(--ink);border-color:var(--ink)} .tj-tag{color:var(--teal-700)}
   .tr-login::before{background:linear-gradient(90deg,var(--coral),var(--saffron),var(--teal),var(--indigo))} .tr-login::after{display:none}
   /* leaderboard: KPI tiles and bar charts */
+  .staff-only{display:none!important} body.staff .staff-only{display:inline-flex!important}
+  .tag-fix{border:1px solid var(--sand-300);background:#fff;color:var(--ink);border-radius:999px;font-size:11px;padding:2px 8px;min-height:22px;cursor:pointer;align-items:center;gap:4px;font-weight:700} .tag-fix:hover{background:var(--saffron);border-color:var(--saffron)}
+  .pm-chips .tag-fix{font-size:12px;min-height:28px;padding:4px 10px}
+  .tag-pop{position:absolute;width:420px;background:var(--card,#fff);border:1px solid var(--sand-200);border-radius:16px;box-shadow:0 24px 60px -20px rgba(27,31,42,.45);padding:14px;z-index:60;display:flex;flex-direction:column;gap:8px;color:var(--ink)}
+  .tag-pop b{font-size:14px} .tag-pop>span{font-size:12px;color:var(--ink-soft)}
+  .tag-pop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px} .tag-pop-grid button{border:1px solid var(--sand-200);background:var(--paper);border-radius:10px;padding:8px 6px;font-size:12.5px;cursor:pointer;color:var(--ink);min-height:36px} .tag-pop-grid button.on{background:var(--ink);color:#fff;border-color:var(--ink)} .tag-pop-grid button:hover{border-color:var(--ink)}
+  .tag-pop-close{align-self:flex-end;background:transparent;border:0;color:var(--ink-soft);font-size:12.5px;cursor:pointer;padding:6px 8px}
+  html[data-theme="dark"] .tag-fix{background:var(--card);border-color:var(--sand-300)}
   .tag-pairs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px} .tag-pairs .tr-btn b{margin-left:6px;opacity:.7}
   .tag-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px;margin-top:14px}
   .tag-card{padding:0;overflow:hidden} .tag-card img{width:100%;aspect-ratio:1;object-fit:cover;display:block;cursor:zoom-in}
@@ -2398,7 +2406,8 @@ function cardHTML(p, simPct, simCls, extra){
   const sim = simTxt ? `<span class="sim-badge ${simCls||""}">${esc(simTxt)}</span>` : "";
   const wd = widthOf(p);
   const tagChips = [
-    p.p ? `<span class="chip">${esc(p.p)}</span>` : "",
+    p.p ? `<span class="chip pchip" data-sku="${esc(p.sku)}">${esc(p.p)}</span>` : `<span class="chip pchip staff-only" data-sku="${esc(p.sku)}">no pattern</span>`,
+    `<button class="tag-fix staff-only" data-sku="${esc(p.sku)}" onclick="event.stopPropagation();tagFixOpen('${esc(p.sku)}', this)" title="Fix the pattern tag">✎</button>`,
     ...(p.k||[]).map(c => `<span class="chip sand">${esc(c)}</span>`)
   ].join("");
   const dots = (p.h || []).slice(0, 4).map(([hex, , name]) =>
@@ -2925,7 +2934,7 @@ function renderProduct(sku){
     <div class="pm-info">
       <h2>${esc(p.sku)}</h2>
       <div class="pm-chips">
-        ${p.p ? `<span class="chip">${esc(p.p)}</span>` : ""}
+        <span class="chip pchip" data-sku="${esc(p.sku)}">${esc(p.p) || "no pattern"}</span><button class="tag-fix staff-only" data-sku="${esc(p.sku)}" onclick="event.stopPropagation();tagFixOpen('${esc(p.sku)}', this)" title="Fix the pattern tag">✎ pattern</button>
         ${(p.k||[]).map(c=>`<span class="chip sand" style="border:1px solid var(--sand-200)">${esc(c)}</span>`).join("")}
       </div>
       <div class="pm-rows">
@@ -3339,6 +3348,7 @@ function staffSetUser(u, token){
   if(token !== undefined){ STAFF.token = token; try{ token ? localStorage.setItem("wcd_staff_token", token) : localStorage.removeItem("wcd_staff_token"); }catch(e){} }
   const nb = document.getElementById("navUser");
   if(nb) nb.textContent = u ? shortName(u.name) : "Training";
+  document.body.classList.toggle("staff", !!u);
   staffTabVisible();
   renderTraining();
   if(VS.list) renderVS();
@@ -3484,6 +3494,32 @@ function closeGame(next){
   document.getElementById("gmJudge").style.display = "none"; document.getElementById("gmList").style.display = "";
   loadGame().then(()=>{ if(next && GAME.today){ const nx = GAME.today.items.find(it => it.status === "todo"); if(nx) openGame(nx.ref_sku); else { toast("All designs done for today. Thank you"); trTab("board"); } } });
 }
+/* ---- staff mode on the normal pages (v9.8): fix a pattern tag from any card or product page.
+   Saved to the engine at once (same store as Pattern review); the website's filter follows at the nightly rebuild. */
+const PATTERN_LIST = ["Plain","Damask","Geometric","Stripe","Cement","Floral","Grasscloth","Tile","Marble","Kids","Botanical","Polka Dot","Wood","Mural","Paisley","Tropical","Check","Fluted","Stone","Terrazzo","Text","Abstract","Wave","Brick","3D","Metallic"];
+function tagFixOpen(sku, btn){
+  if(!STAFF.user){ toast("Sign in as staff first"); return; }
+  document.querySelectorAll(".tag-pop").forEach(e => e.remove());
+  const p = byId.get(sku) || {}; const cur = p.p || "";
+  const pop = document.createElement("div"); pop.className = "tag-pop";
+  pop.innerHTML = `<b>${esc(sku)}</b><span>Pattern now: ${esc(cur) || "none"} (${p.ts === "T" ? "tagger" : p.ts === "S" ? "decided by staff" : "engine"})</span>
+    <div class="tag-pop-grid">${PATTERN_LIST.map(x => `<button class="${x === cur ? "on" : ""}" onclick="tagFixSave('${esc(sku)}','${esc(x)}')">${esc(x)}</button>`).join("")}</div>
+    <button class="tag-pop-close" onclick="this.parentNode.remove()">Cancel</button>`;
+  document.body.appendChild(pop);
+  const r = btn.getBoundingClientRect(); const w = 420, h = pop.offsetHeight || 360;
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + "px";
+  pop.style.top = (r.bottom + 8 + h > window.innerHeight ? r.top - h - 8 : r.bottom + 8) + window.scrollY + "px";
+}
+async function tagFixSave(sku, pattern){
+  const p = byId.get(sku) || {};
+  try{ await staffFetch("/training/tagdecide", {method:"POST", body: JSON.stringify({sku, decision: pattern, his: p.p || "", engine: p.pe || ""})});
+    p.p = pattern; p.ts = "S";
+    document.querySelectorAll(`.pchip[data-sku="${CSS.escape(sku)}"]`).forEach(c => { c.textContent = pattern; c.classList.remove("staff-only"); });
+    document.querySelectorAll(".tag-pop").forEach(e => e.remove());
+    toast(`${sku} → ${pattern}. On the website tonight.`);
+  }catch(e){ toast("Could not save"); }
+}
+document.addEventListener("click", e => { if(!e.target.closest(".tag-pop") && !e.target.closest(".tag-fix")) document.querySelectorAll(".tag-pop").forEach(x => x.remove()); });
 /* ---- pattern review: where his tagger and our engine disagree, a person decides, with the picture in front of them ---- */
 const TAGS = { filter: "" };
 async function loadTags(){

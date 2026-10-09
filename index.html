@@ -1536,6 +1536,13 @@
   .tag-choice .tr-btn.his:hover{border-color:var(--saffron);background:#FFF1C2} .tag-choice .tr-btn.eng:hover{border-color:var(--teal);background:#E0F7F6}
   .tag-other{min-height:38px;border:1px solid var(--sand-200);border-radius:10px;padding:6px 10px;font-size:13px;background:var(--paper);color:var(--ink)}
   @media(max-width:560px){.tag-grid{grid-template-columns:1fr 1fr;gap:10px}}
+  .qwrap{position:relative;display:inline-block} #qSel{position:absolute;left:0;top:0;display:none;touch-action:none;cursor:crosshair;border-radius:inherit}
+  .qwrap.selecting #qSel{display:block}
+  .vs-query .qwrap.selecting #qImg{width:min(440px,82vw);height:auto;max-height:none}
+  .vs-query .qwrap{transition:none}
+  .qtools{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+  .qclose{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--ink);background:#FFF1C2;border-radius:999px;padding:8px 14px;min-height:36px} .qclose input{accent-color:var(--coral);width:16px;height:16px}
+  html[data-theme="dark"] .qclose{background:#3A2F12;color:#FFE2A8}
   .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;background:transparent;box-shadow:none;padding:0;border:0}
   .kpi{border-radius:18px;padding:18px 18px 16px;color:#fff;position:relative;overflow:hidden} .kpi b{display:block;font-family:Manrope,sans-serif;font-weight:800;font-size:34px;line-height:1;letter-spacing:-.02em} .kpi span{display:block;font-size:12.5px;margin-top:8px;opacity:.92;line-height:1.4}
   .kpi.coral{background:var(--coral)} .kpi.teal{background:var(--teal)} .kpi.saffron{background:var(--saffron);color:var(--ink)} .kpi.indigo{background:var(--indigo)} .kpi.plum{background:var(--plum)}
@@ -1834,7 +1841,7 @@
       </div>
       <b>Drop an image here, or click to upload</b>
       <p>JPG or PNG · matched against the full live catalogue by how the design looks</p>
-      <p class="dz-note">Matched on the WCD server by the same design engine Mia uses: pattern, texture and colour,
+      <p class="dz-note">Matched on the WCD server by the same design engine Sarah uses: pattern, texture and colour,
         checked against the live stock list. Nothing to download; a search takes about 10–30 seconds.</p>
       <input type="file" id="fileInput" accept="image/*" hidden onchange="handleFile(this.files[0])">
     </div>
@@ -1846,11 +1853,18 @@
 
     <div class="vs-result" id="vsResult">
       <div class="vs-query">
-        <div class="qwrap"><img id="qImg" alt="Query image"></div>
+        <div class="qwrap" id="qWrap"><img id="qImg" alt="Query image"><canvas id="qSel"></canvas></div>
         <div class="qmeta">
           <b id="qStatus">Analysing image…</b>
           <div class="qtags" id="qTags"></div>
           <div class="scanbar"><i id="scanFill"></i></div>
+          <div class="qtools" id="qTools">
+            <button class="tr-btn sm" id="qSelBtn" onclick="selToggle()">Select the wallpaper</button>
+            <button class="tr-btn sm" id="qSelGo" onclick="selSearch()" style="display:none">Search this area</button>
+            <button class="tr-btn sm" id="qSelReset" onclick="selReset()" style="display:none">Whole photo</button>
+            <label class="qclose" id="qCloseLbl" style="display:none"><input type="checkbox" id="qCloseup" onchange="selCloseup(this.checked)"> This is a close-up of the wallpaper, not a room</label>
+            <button class="tr-btn sm" onclick="openViewer(VS.src, 'Your photo')">Zoom</button>
+          </div>
         </div>
       </div>
       <div class="vs-grid-head">
@@ -2345,7 +2359,7 @@ function init(data){
   applyFilters();
   staffInit();
   bootDeepLink();
-  /* Mia's link: #visual (or #browse, #collections) opens that page straight away */
+  /* Sarah's link: #visual (or #browse, #collections) opens that page straight away */
   { const h = (location.hash || "").replace("#", ""); if(["browse", "collections", "visual"].includes(h)) go(h); }
   LAYOUT.run();
   MOTION.hero(); if(!MOTION.on) MOTION.wall();
@@ -2974,7 +2988,7 @@ function fillSims(p){
 }
 
 /* ================= FRAME 4 : VISUAL SEARCH, WCD similarity service ================= */
-/* The photo goes to the WCD service on this server (the same engine Mia uses): DINOv2 + SigLIP2 fingerprints,
+/* The photo goes to the WCD service on this server (the same engine Sarah uses): DINOv2 + SigLIP2 fingerprints,
    Qdrant search, colour check, jigsaw verification, staff-verified memory. Nothing is downloaded to the browser. */
 const API = (window.WCD && window.WCD.api) || (((window.WCD || {}).host || "") + "/marketplace/api");
 const SAMPLES = ["mg-7712-a.jpg","mg-7736-a.jpg","mg-7721-a.jpg","mg-7728-a.jpg","mg-7723-a.jpg"];
@@ -3032,10 +3046,11 @@ function vsSetQty(v){ VS.qty = String(v||"").trim(); }
 function vsQtyGo(){ if(VS.file) runSearch(); }
 function vsParams(extra){
   return Object.assign({session: SESSION, mode: VS.mode, width_cm: VS.width || null, in_stock_only: VS.inStock,
-                        min_qty: VS.qty ? Number(VS.qty) : null, unit: VS.qty ? "Rolls" : "", top_k: 24}, extra || {});
+                        min_qty: VS.qty ? Number(VS.qty) : null, unit: VS.qty ? "Rolls" : "", top_k: 24,
+                        roi: VS.roi || null, closeup: !!VS.closeup}, extra || {});
 }
 async function runMatch(src){
-  /* src: a data: URL from the dropzone, an img/ sample path, or /marketplace/photo/<id> from a Mia link */
+  /* src: a data: URL from the dropzone, an img/ sample path, or /marketplace/photo/<id> from a Sarah link */
   try{
     const blob = await (await fetch(src)).blob();
     VS.file = new File([blob], "query.jpg", {type: blob.type || "image/jpeg"});
@@ -3044,11 +3059,35 @@ async function runMatch(src){
   }catch(e){ console.error(e); toast("Could not read that image"); }
 }
 function handleFile(file){
+  VS.roi = null; VS.closeup = false; selReset(true);
   if(!file || !file.type.startsWith("image/")) return;
   const rd = new FileReader();
   rd.onload = e => { VS.file = file; VS.src = e.target.result; runSearch(); };
   rd.readAsDataURL(file);
 }
+/* ---- select the wallpaper: drag a box over the part to match (mouse or finger), then search that area ---- */
+const SEL = { on: false, box: null, start: null };
+function selToggle(){
+  SEL.on = !SEL.on; const c = document.getElementById("qSel"), wrap = document.getElementById("qWrap");
+  wrap.classList.toggle("selecting", SEL.on); document.getElementById("qSelBtn").textContent = SEL.on ? "Cancel" : "Select the wallpaper";
+  if(SEL.on){ c.style.display = "block"; requestAnimationFrame(() => requestAnimationFrame(selFit)); toast("Drag a box over the wallpaper"); } else { c.style.display = SEL.box ? "block" : "none"; requestAnimationFrame(() => requestAnimationFrame(selFit)); }
+}
+function selFit(){ const img = document.getElementById("qImg"), c = document.getElementById("qSel"); c.width = img.clientWidth; c.height = img.clientHeight; selDraw(); }
+function selDraw(){
+  const c = document.getElementById("qSel"), ctx = c.getContext("2d"); ctx.clearRect(0, 0, c.width, c.height);
+  if(!SEL.box) return;
+  const [x, y, w, h] = SEL.box.map((v, i) => v * (i % 2 ? c.height : c.width));
+  ctx.fillStyle = "rgba(27,31,42,.45)"; ctx.fillRect(0, 0, c.width, c.height); ctx.clearRect(x, y, w, h);
+  ctx.strokeStyle = "#FF5A3C"; ctx.lineWidth = 3; ctx.setLineDash([8, 6]); ctx.strokeRect(x, y, w, h);
+}
+function selPos(e){ const c = document.getElementById("qSel"), r = c.getBoundingClientRect(); return [Math.min(1, Math.max(0, (e.clientX - r.left) / r.width)), Math.min(1, Math.max(0, (e.clientY - r.top) / r.height))]; }
+document.addEventListener("pointerdown", e => { if(!SEL.on || e.target.id !== "qSel") return; e.preventDefault(); SEL.start = selPos(e); SEL.box = [SEL.start[0], SEL.start[1], 0, 0]; e.target.setPointerCapture(e.pointerId); });
+document.addEventListener("pointermove", e => { if(!SEL.on || !SEL.start) return; const [x, y] = selPos(e); SEL.box = [Math.min(x, SEL.start[0]), Math.min(y, SEL.start[1]), Math.abs(x - SEL.start[0]), Math.abs(y - SEL.start[1])]; selDraw(); });
+document.addEventListener("pointerup", e => { if(!SEL.on || !SEL.start) return; SEL.start = null; if(SEL.box && SEL.box[2] > .05 && SEL.box[3] > .05){ document.getElementById("qSelGo").style.display = ""; document.getElementById("qSelReset").style.display = ""; } else { SEL.box = null; selDraw(); } });
+window.addEventListener("resize", () => { if(SEL.box) selFit(); });
+async function selSearch(){ if(!SEL.box) return; VS.roi = SEL.box.map(v => Math.round(v * 1000) / 1000); SEL.on = false; document.getElementById("qWrap").classList.remove("selecting"); document.getElementById("qSelBtn").textContent = "Select the wallpaper"; await runSearch(); }
+function selReset(silent){ SEL.box = null; SEL.on = false; VS.roi = null; const c = document.getElementById("qSel"); if(c){ c.style.display = "none"; selDraw(); } const w = document.getElementById("qWrap"); if(w) w.classList.remove("selecting"); ["qSelGo", "qSelReset"].forEach(id => { const b = document.getElementById(id); if(b) b.style.display = "none"; }); const sb = document.getElementById("qSelBtn"); if(sb) sb.textContent = "Select the wallpaper"; if(!silent) runSearch(); }
+async function selCloseup(v){ VS.closeup = v; await runSearch(); }
 async function runSearch(more){
   if(VS.busy) return;
   VS.busy = true;
@@ -3056,6 +3095,7 @@ async function runSearch(more){
   box.classList.add("show");
   if(!more) box.scrollIntoView({behavior:"smooth", block:"start"});
   document.getElementById("qImg").src = VS.src;
+  document.getElementById("qImg").onload = () => { if(SEL.box){ selFit(); document.getElementById("qSel").style.display = "block"; } };
   document.getElementById("qTags").innerHTML = "";
   document.getElementById("vsFeedback").innerHTML = "";
   if(!more){ document.getElementById("vsGrid").innerHTML = ""; VS.fb = {}; }
@@ -3109,6 +3149,7 @@ function applyResult(j, more){
   VS.raw = j;
   if(j.review_id) VS.reqId = j.review_id;
   const q = j.query || {}, ref = j.reference || {};
+  { const lbl = document.getElementById("qCloseLbl"); if(lbl) lbl.style.display = (ref.looks_like_room || VS.closeup) ? "" : "none"; }
   let head = "";
   if(j.status !== "SUCCESS" || !cands.length) head = "No close match in the current catalogue with these filters.";
   else if(j.recognised_out_of_stock) head = `This looks like ${j.recognised_out_of_stock.sku || "a product"}, which is out of stock. Closest in stock shown first.`;
@@ -3220,12 +3261,12 @@ const dz = document.getElementById("dropzone");
 ["dragleave","drop"].forEach(ev=>dz.addEventListener(ev,e=>{e.preventDefault();dz.classList.remove("drag");}));
 dz.addEventListener("drop",e=>handleFile(e.dataTransfer.files[0]));
 
-/* ---- deep link from Mia: ?photo=<request id> opens the page already searched ---- */
+/* ---- deep link from Sarah: ?photo=<request id> opens the page already searched ---- */
 function bootDeepLink(){
   const u = new URL(location.href), g = k => u.searchParams.get(k) || "";
   const rid = g("photo"), sku = g("sku"), q = g("q");
   if(!rid && !sku && !q) return;
-  /* filters carried in the link (Mia reads them from the customer's message) */
+  /* filters carried in the link (Sarah reads them from the customer's message) */
   if(["pattern","colour","both"].includes(g("mode"))) VS.mode = g("mode");
   if(["53","106"].includes(g("w"))) VS.width = Number(g("w"));
   if(g("qty") && Number(g("qty")) > 0){ VS.qty = String(Number(g("qty"))); const qi = document.querySelector(".vs-qty input"); if(qi) qi.value = VS.qty; }
@@ -3236,7 +3277,7 @@ function bootDeepLink(){
   else if(sku) runRemote({source:"sku", sku});
   else if(q) runRemote({source:"text", text:q});
 }
-/* Mia's link: show the results the customer already got (instant), keep the photo so filters can re-search */
+/* Sarah's link: show the results the customer already got (instant), keep the photo so filters can re-search */
 async function openStoredSearch(rid){
   const base = API.replace(/\/api$/, "");
   const box = document.getElementById("vsResult"); box.classList.add("show");
@@ -3250,7 +3291,7 @@ async function openStoredSearch(rid){
     const shown = d.candidates || [];
     if(shown.length){
       applyResult({status:"SUCCESS", candidates: shown.map(c => ({...c, image_url: (byId.get(c.sku)||{}).i})), reference: d.reference || {}, meta:{}}, false);
-      document.getElementById("qStatus").textContent = "The designs Mia found for this photo. Change what matters, the width or the quantity to search again.";
+      document.getElementById("qStatus").textContent = "The designs Sarah found for this photo. Change what matters, the width or the quantity to search again.";
     } else {
       runSearch();
     }

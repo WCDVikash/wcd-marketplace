@@ -1657,6 +1657,41 @@
   .hero-mosaic .tile{background:#fff!important}
   .hero-mosaic .tile img{border-radius:inherit;display:block;width:100%;height:100%;object-fit:cover}
   html[data-theme="dark"] .hero-mosaic .tile{background:#2A2F38!important}
+
+  /* ===== v9.9: text search, Reset, divider, three-step guide ===== */
+  .searchbar .hero-reset{display:none;background:#fff;color:#8A2A16;font-weight:800;font-size:14px;border:0;border-left:1px solid var(--sand-200);padding:0 14px;cursor:pointer;white-space:nowrap} .searchbar.has .hero-reset{display:inline-flex;align-items:center;gap:4px}
+  .searchbar input{font-size:17px;font-weight:600}
+  .understood{display:flex;flex-wrap:wrap;gap:8px;align-items:center;min-height:30px;margin:10px 0 2px;font-size:14px;font-weight:600;color:var(--ink-soft)} .ulbl{margin-right:2px}
+  .uchip{display:inline-flex;gap:6px;align-items:center;border-radius:999px;padding:7px 13px;font-size:14px;font-weight:800;background:var(--card,#fff);border:2px solid var(--sand-200);color:var(--ink)} .uchip i{width:14px;height:14px;border-radius:999px;display:inline-block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.1)}
+  .uchip.c{border-color:var(--teal);color:var(--teal-700)} .uchip.q{border-color:var(--saffron);color:#8A5A00} .uchip.p{border-color:var(--plum);color:var(--plum)} .uchip.t{border-color:var(--indigo);color:var(--indigo)}
+  .hero-divider{border:0;border-top:2px solid var(--sand-200);margin:22px 0 18px;width:100%}
+  .vv-ctas{gap:12px} .tr-btn.guide-btn{background:var(--coral);color:#fff;border-color:var(--coral);font-size:18px;padding:16px 28px;min-height:60px;box-shadow:0 18px 40px -14px rgba(255,90,60,.7);outline:3px solid var(--coral);outline-offset:3px} .tr-btn.guide-btn:hover{background:var(--coral-700);border-color:var(--coral-700)}
+  .tr-btn.big{min-height:54px;font-size:16px;padding:14px 24px}
+  .search-hints .hint-chip{font-size:14px;min-height:38px}
+  .achip.need{background:#FFF1C2;color:#5A3D00}
+  .chip.need{background:#FFF1C2;color:#5A3D00;font-weight:800}
+  #guide.guide{position:fixed;inset:0;z-index:80;display:none} #guide.guide.open{display:block}
+  .guide-back{position:absolute;inset:0;background:rgba(27,31,42,.55);backdrop-filter:blur(3px)}
+  .guide-card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(900px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;background:var(--card,#fff);border-radius:28px;padding:28px;box-shadow:0 40px 100px -30px rgba(0,0,0,.6);color:var(--ink)}
+  .guide-x{position:absolute;right:18px;top:16px;width:40px;height:40px;border-radius:999px;border:1px solid var(--sand-200);background:var(--paper);font-size:16px;cursor:pointer;color:var(--ink)}
+  .gsteps{display:flex;gap:10px;align-items:center;margin:4px 48px 20px 0;font-size:15px;font-weight:700;color:var(--ink-soft)} .gsteps span{display:flex;align-items:center;white-space:nowrap} .gsteps b{display:inline-flex;width:34px;height:34px;border-radius:999px;background:var(--sand-100);align-items:center;justify-content:center;color:var(--ink);margin-right:8px;font-size:15px} .gsteps .on b{background:var(--coral);color:#fff} .gsteps .done b{background:var(--teal);color:#fff} .gsteps i{flex:1;height:2px;background:var(--sand-200);min-width:12px} .gsteps small{margin-left:6px;color:#9AA1AE;font-weight:600}
+  .gpane{display:none} .gpane.on{display:block}
+  .gq{font-family:var(--font-display);font-size:40px;font-weight:600;margin:0 0 6px;line-height:1.1} .ghint{color:var(--ink-soft);font-size:16px;font-weight:500;margin:0 0 18px}
+  .gcolours{display:grid;grid-template-columns:repeat(7,1fr);gap:10px} .gcolours button{border:3px solid transparent;border-radius:16px;padding:10px 4px 8px;background:var(--sand-100);cursor:pointer;font-family:inherit;font-size:13.5px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:8px;color:var(--ink)} .gcolours i{width:46px;height:46px;border-radius:999px;display:block;box-shadow:inset 0 0 0 1px rgba(0,0,0,.08)} .gcolours button.on{border-color:var(--ink);background:var(--card,#fff)}
+  .gor{display:flex;align-items:center;gap:12px;margin:18px 0 10px;color:var(--ink-soft);font-size:14px;font-weight:600} .gor i{flex:1;height:1px;background:var(--sand-200)} .gor a{color:var(--coral);font-weight:800}
+  .gpatterns{display:grid;grid-template-columns:repeat(6,1fr);gap:10px} .gpatterns button{border:3px solid transparent;border-radius:14px;background:var(--sand-100);padding:0;cursor:pointer;overflow:hidden;font-family:inherit;color:var(--ink)} .gpatterns img{width:100%;aspect-ratio:1;object-fit:cover;display:block} .gpatterns span{display:block;font-size:14px;font-weight:800;padding:7px} .gpatterns button.on{border-color:var(--ink)}
+  .gqty{display:flex;gap:10px;align-items:center;flex-wrap:wrap} .gqty input{width:190px;border:2px solid var(--sand-200);border-radius:14px;padding:14px;font-size:28px;font-weight:800;font-family:inherit;background:var(--paper);color:var(--ink)}
+  .gseg{display:inline-flex;border:2px solid var(--sand-200);border-radius:999px;overflow:hidden} .gseg button{border:0;background:var(--card,#fff);padding:14px 20px;font-weight:800;font-size:16px;cursor:pointer;font-family:inherit;color:var(--ink)} .gseg button.on{background:var(--ink);color:#fff}
+  .gconv{margin-top:14px;background:var(--sand-100);border-radius:14px;padding:16px 18px;font-size:15.5px;line-height:1.5;color:var(--ink)} .gconv b{color:var(--ink)}
+  .gtypes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px} .gtypes button{border:3px solid transparent;border-radius:16px;background:var(--sand-100);padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit;color:var(--ink)} .gtypes b{display:block;font-size:16px} .gtypes small{display:block;color:var(--ink-soft);margin-top:4px;font-size:13px} .gtypes button.on{border-color:var(--ink);background:var(--card,#fff)}
+  .gnav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px;flex-wrap:wrap} .gsum{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center}
+  @media(max-width:700px){.gcolours{grid-template-columns:repeat(4,1fr)}.gpatterns{grid-template-columns:repeat(3,1fr)}.gtypes{grid-template-columns:1fr}.gq{font-size:32px}.guide-card{padding:20px 16px;border-radius:22px}.gsteps{font-size:13px;gap:6px} .gsteps small{display:none}.gnav{flex-direction:column;align-items:stretch}.gnav .tr-btn{width:100%;justify-content:center}.gqty{align-items:stretch}.gqty input{width:100%}.gseg{width:100%}.gseg button{flex:1;padding:14px 8px}
+    .searchbar{flex-wrap:wrap}.searchbar input{flex:1 1 100%;min-width:0}.searchbar .hero-reset{flex:1;border-left:0;border-top:1px solid var(--sand-200);padding:12px;justify-content:center} .searchbar .hero-reset span{display:inline!important} .gsteps{margin-right:40px}.searchbar button[type=submit]{flex:1;border-top:1px solid var(--sand-200)}.vv-ctas{flex-direction:column}.vv-ctas .tr-btn{width:100%;justify-content:center}.search-hints{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}.search-hints .hint-chip{flex:0 0 auto}}
+
+  .vs-refine{display:flex;gap:10px;align-items:center;font-size:14px;font-weight:600;color:var(--ink-soft);margin:6px 0 10px} .vs-refine i{width:140px;height:6px;border-radius:999px;background:var(--sand-200);overflow:hidden;display:block;position:relative} .vs-refine i::after{content:"";position:absolute;left:0;top:0;width:55%;height:100%;background:linear-gradient(90deg,var(--coral),var(--saffron));animation:vsgo 1.6s linear infinite} @keyframes vsgo{from{transform:translateX(-100%)}to{transform:translateX(260%)}}
+  #vsGrid .pcard .selbox{opacity:1;width:34px;height:34px;border-width:2px;border-color:var(--ink);background:rgba(255,255,255,.95)} #vsGrid .pcard.sel .selbox{background:var(--coral);border-color:var(--coral)}
+  .selbar b{font-size:15px} .selbar button{min-height:40px;font-size:13.5px;font-weight:800}
+  body.dragging #frame-visual .dropzone{outline:4px dashed var(--coral);outline-offset:6px}
 </style>
 </head>
 <body>
@@ -1697,13 +1732,15 @@
         <p class="eyebrow">Wallcoverings · Fabrics · Vinyl · Stickers</p>
         <h1 id="heroTitle">Find the perfect surface, <em>visually.</em></h1>
         <p class="sub" id="heroSub">Search the entire WCD catalogue the way designers think: by look, colour and mood, not by SKU code.</p>
-        <form class="searchbar" onsubmit="heroSearch(event)">
-          <input id="heroQ" type="text" placeholder="Try &quot;floral&quot;, &quot;plain grey&quot;, a collection or a SKU…" autocomplete="off">
+        <form class="searchbar" id="heroForm" onsubmit="heroSearch(event)">
+          <input id="heroQ" type="text" placeholder="Try &quot;floral&quot;, &quot;plain grey&quot;, a collection or a SKU…" autocomplete="off" oninput="heroParse(this.value)">
+          <button type="button" class="hero-reset" id="heroReset" onclick="heroReset()">✕ <span data-i18n="hero.reset">Reset</span></button>
           <button type="submit">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
             <span>Search</span>
           </button>
         </form>
+        <div class="understood" id="understood"></div>
         <div class="search-hints">
           <span>Popular:</span>
           <button class="hint-chip" data-q="Floral">Floral</button>
@@ -1847,7 +1884,7 @@
       <div class="dz-icon">
         <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="3"/><circle cx="9" cy="9" r="2"/><path d="m21 15-4.5-4.5L7 20"/></svg>
       </div>
-      <b>Drop an image here, or click to upload</b>
+      <b>Drop an image here, click to upload, or paste (Ctrl+V)</b>
       <p>JPG or PNG · matched against the full live catalogue by how the design looks</p>
       <p class="dz-note">Matched on the WCD server by the same design engine Sarah uses: pattern, texture and colour,
         checked against the live stock list. Nothing to download; a search takes about 10–30 seconds.</p>
@@ -2047,7 +2084,8 @@ const LAYOUT = (() => {
       $(".topbar-inner").insertBefore(I18N.switcher(), $(".quote-btn"));
       /* hero: text left, wall right (kept), tiles below */
       const text = $(".hero-grid").children[0];
-      text.appendChild(el("div", "vv-ctas", `<button class="tr-btn primary" onclick="go('visual')" data-i18n="hero.photo">${I18N.t("hero.photo")}</button><button class="tr-btn ghost" onclick="go('browse')" data-i18n="hero.cta">${I18N.t("hero.cta")}</button>`));
+      text.appendChild(el("hr", "hero-divider"));
+      text.appendChild(el("div", "vv-ctas", `<button class="tr-btn guide-btn" onclick="GUIDE.open()"><span>✦</span> <span data-i18n="hero.guide">${I18N.t("hero.guide")}</span></button><button class="tr-btn ghost" onclick="go('visual')" data-i18n="hero.photo">${I18N.t("hero.photo")}</button><button class="tr-btn ghost" onclick="go('browse')" data-i18n="hero.cta">${I18N.t("hero.cta")}</button>`));
       const tiles = section("vv-tiles", `<div class="tiles">
         <button class="etile browse" onclick="go('browse')"><i>${ICON.browse}</i><b data-i18n="tile.browse">${I18N.t("tile.browse")}</b><span>${PRODUCTS.length.toLocaleString()} <span data-i18n="unit.designs">${I18N.t("unit.designs")}</span></span></button>
         <button class="etile colour" onclick="go('browse')"><i>${ICON.colour}</i><b data-i18n="tile.colour">${I18N.t("tile.colour")}</b><span>25 <span data-i18n="unit.colours">${I18N.t("unit.colours")}</span></span></button>
@@ -2106,7 +2144,7 @@ const I18N = (() => {
     en: {"brand.name": "WCD Marketplace", "brand.word": "Marketplace",
       "nav.home": "Home", "nav.browse": "Browse", "nav.collections": "Collections", "nav.visual": "Visual Search", "nav.training": "Training", "nav.moodboards": "Moodboards",
       "hero.eyebrow": "Wallcoverings · Fabrics · Vinyl · Stickers", "hero.title": "Find the perfect surface, <em>visually.</em>", "hero.sub": "Search the entire WCD catalogue the way designers think: by look, colour and mood, not by SKU code.",
-      "hero.placeholder": "Try \"floral\", \"plain grey\", a collection or a SKU…", "hero.search": "Search", "hero.popular": "Popular:", "hero.photo": "Search by photo", "hero.cta": "Browse the catalogue",
+      "hero.placeholder": "Type what you need, e.g. red wallpaper 400 square feet", "hero.search": "Search", "hero.popular": "Popular:", "hero.photo": "Search by photo", "hero.cta": "Browse the catalogue", "hero.reset": "Reset", "hero.guide": "Guide me in three steps",
       "tile.browse": "Browse by pattern", "tile.colour": "Browse by colour", "tile.colls": "Collections", "tile.photo": "Search by photo", "tile.photo.sub": "Upload or snap a reference", "unit.designs": "designs", "unit.colours": "colour families", "unit.collections": "collections", "unit.instock": "in stock",
       "home.collections.eyebrow": "Collections", "home.collections.title": "The biggest live collections", "home.collections.all": "All collections",
       "home.designs.eyebrow": "Selected designs", "home.designs.title": "From the catalogue this week", "home.designs.sub": "Hover any swatch to enlarge it, see its tags, tick to select, or add it to a moodboard.", "home.designs.all": "Browse all designs",
@@ -2120,7 +2158,7 @@ const I18N = (() => {
     ms: {"brand.name": "WCD Marketplace", "brand.word": "Marketplace",
       "nav.home": "Utama", "nav.browse": "Katalog", "nav.collections": "Koleksi", "nav.visual": "Carian Visual", "nav.training": "Latihan", "nav.moodboards": "Papan Idea",
       "hero.eyebrow": "Kertas dinding · Fabrik · Vinil · Pelekat", "hero.title": "Cari permukaan yang sempurna, <em>secara visual.</em>", "hero.sub": "Cari seluruh katalog WCD seperti pereka berfikir: ikut rupa, warna dan suasana, bukan kod SKU.",
-      "hero.placeholder": "Cuba \"bunga\", \"kelabu kosong\", nama koleksi atau SKU…", "hero.search": "Cari", "hero.popular": "Popular:", "hero.photo": "Cari ikut gambar", "hero.cta": "Lihat katalog",
+      "hero.placeholder": "Taip apa yang anda perlukan, cth. kertas dinding merah 400 kaki persegi", "hero.search": "Cari", "hero.popular": "Popular:", "hero.photo": "Cari ikut gambar", "hero.cta": "Lihat katalog", "hero.reset": "Padam", "hero.guide": "Bimbing saya dalam tiga langkah",
       "tile.browse": "Ikut corak", "tile.colour": "Ikut warna", "tile.colls": "Koleksi", "tile.photo": "Cari ikut gambar", "tile.photo.sub": "Muat naik atau ambil gambar rujukan", "unit.designs": "reka bentuk", "unit.colours": "keluarga warna", "unit.collections": "koleksi", "unit.instock": "ada stok",
       "home.collections.eyebrow": "Koleksi", "home.collections.title": "Koleksi terbesar yang ada", "home.collections.all": "Semua koleksi",
       "home.designs.eyebrow": "Reka bentuk pilihan", "home.designs.title": "Dari katalog minggu ini", "home.designs.sub": "Lalukan tetikus untuk besarkan, lihat tag, tanda untuk pilih, atau tambah ke papan idea.", "home.designs.all": "Lihat semua reka bentuk",
@@ -2134,7 +2172,7 @@ const I18N = (() => {
     zh: {"brand.name": "WCD 选品平台", "brand.word": "Marketplace",
       "nav.home": "首页", "nav.browse": "浏览", "nav.collections": "系列", "nav.visual": "以图搜图", "nav.training": "培训", "nav.moodboards": "灵感板",
       "hero.eyebrow": "墙纸 · 布料 · 乙烯基 · 贴膜", "hero.title": "用眼睛，找到<em>理想的墙面。</em>", "hero.sub": "像设计师一样搜索 WCD 全部目录：凭外观、颜色和氛围，而不是货号。",
-      "hero.placeholder": "试试“花卉”“素色灰”、系列名或货号…", "hero.search": "搜索", "hero.popular": "热门：", "hero.photo": "以图搜图", "hero.cta": "浏览目录",
+      "hero.placeholder": "输入您的需求，例如：红色墙纸 400 平方英尺", "hero.search": "搜索", "hero.popular": "热门：", "hero.photo": "以图搜图", "hero.cta": "浏览目录", "hero.reset": "清除", "hero.guide": "三步引导",
       "tile.browse": "按图案浏览", "tile.colour": "按颜色浏览", "tile.colls": "系列", "tile.photo": "以图搜图", "tile.photo.sub": "上传或拍摄参考图", "unit.designs": "款", "unit.colours": "个色系", "unit.collections": "个系列", "unit.instock": "有货",
       "home.collections.eyebrow": "系列", "home.collections.title": "在售的最大系列", "home.collections.all": "全部系列",
       "home.designs.eyebrow": "精选", "home.designs.title": "本周目录精选", "home.designs.sub": "悬停放大、查看标签、勾选或加入灵感板。", "home.designs.all": "浏览全部",
@@ -2405,7 +2443,8 @@ function cardHTML(p, simPct, simCls, extra){
   const simTxt = simPct == null ? "" : (typeof simPct === "number" ? simPct + "% match" : simPct);
   const sim = simTxt ? `<span class="sim-badge ${simCls||""}">${esc(simTxt)}</span>` : "";
   const wd = widthOf(p);
-  const tagChips = [
+  const needTxt = state.need ? (r => r == null ? "" : `<span class="chip need">need ${r} ${state.need.unit === "m" && !rollDims(p).l ? "m" : "roll" + (r === 1 ? "" : "s")}</span>`)(rollsNeeded(p, state.need)) : "";
+  const tagChips = [needTxt,
     p.p ? `<span class="chip pchip" data-sku="${esc(p.sku)}">${esc(p.p)}</span>` : `<span class="chip pchip staff-only" data-sku="${esc(p.sku)}">no pattern</span>`,
     `<button class="tag-fix staff-only" data-sku="${esc(p.sku)}" onclick="event.stopPropagation();tagFixOpen('${esc(p.sku)}', this)" title="Fix the pattern tag">✎</button>`,
     ...(p.k||[]).map(c => `<span class="chip sand">${esc(c)}</span>`)
@@ -2686,7 +2725,17 @@ function clearSelection(){
   updateSelbar();
 }
 function selToBoard(){ openChooser([...SELECTED]); }
-function selExport(){ exportPDF("Product Selection", [...SELECTED]); }
+function selExport(){ downloadPDF("Product Selection", [...SELECTED]); }
+async function downloadPDF(title, skus){
+  if(!skus.length){ toast("Nothing to export"); return; }
+  toast("Preparing your PDF…");
+  try{
+    const r = await fetch(API + "/pdf", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({title, skus: skus.slice(0, 60), session: SESSION})});
+    if(!r.ok) throw new Error(r.status);
+    const blob = await r.blob(); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "WCD-designs.pdf"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    toast("PDF downloaded");
+  }catch(e){ console.error(e); toast("Download failed, opening the print view instead"); exportPDF(title, skus); }
+}
 function selWhatsApp(){ shareWA("Product Selection", [...SELECTED]); }
 saveMB();
 let toastTimer;
@@ -2701,8 +2750,12 @@ function toast(msg){
 /* ================= SEARCH ================= */
 function heroSearch(ev){
   ev.preventDefault();
-  chipSearch(document.getElementById("heroQ").value.trim());
+  const q = document.getElementById("heroQ").value.trim();
+  const u = TEXTQ.parse(q);
+  if(u.hit) TEXTQ.apply(u); else chipSearch(q);
 }
+function heroParse(v){ document.getElementById("heroForm").classList.toggle("has", !!v.trim()); TEXTQ.show(TEXTQ.parse(v)); }
+function heroReset(){ const i = document.getElementById("heroQ"); i.value = ""; heroParse(""); i.focus(); }
 function chipSearch(q){
   clearFilters(true);
   applyDefaultTypes();          // searches start from the wallpaper ranges
@@ -2710,8 +2763,111 @@ function chipSearch(q){
   go("browse"); applyFilters();
 }
 
+
+/* ================= TEXT SEARCH → FILTERS and the THREE-STEP GUIDE (v9.9) =================
+   No AI: word lists for colours, patterns and product types (EN / BM / 中文), a quantity with its unit, and "in stock".
+   Everything lands in Browse's filters, so the result page is the familiar one. */
+const TEXTQ = (() => {
+  const COLW = {red:"Red","dark red":"Dark Red",maroon:"Dark Red",merah:"Red",红:"Red",红色:"Red",pink:"Pink","merah jambu":"Pink",粉:"Pink",粉色:"Pink",orange:"Orange",oren:"Orange",橙:"Orange",peach:"Peach",yellow:"Yellow",kuning:"Yellow",黄:"Yellow",黄色:"Yellow",gold:"Gold",golden:"Gold",emas:"Gold",金:"Gold",金色:"Gold",green:"Green",hijau:"Green",绿:"Green",绿色:"Green","dark green":"Dark Green","light green":"Light Green",sage:"Light Green",teal:"Teal",blue:"Blue",biru:"Blue",蓝:"Blue",蓝色:"Blue",navy:"Dark Blue","dark blue":"Dark Blue","light blue":"Light Blue",purple:"Purple",ungu:"Purple",紫:"Purple",紫色:"Purple",brown:"Brown",coklat:"Brown",棕:"Brown",棕色:"Brown","dark brown":"Dark Brown","light brown":"Light Brown",beige:"Beige",krim:"Cream",cream:"Cream",米色:"Beige",奶油:"Cream",white:"White",putih:"White",白:"White",白色:"White",grey:"Grey",gray:"Grey",kelabu:"Grey",灰:"Grey",灰色:"Grey","dark grey":"Dark Grey","light grey":"Light Grey",black:"Black",hitam:"Black",黑:"Black",黑色:"Black",silver:"Light Grey"};
+  const PATW = {plain:"Plain",kosong:"Plain",polos:"Plain",素色:"Plain",纯色:"Plain",stripe:"Stripe",stripes:"Stripe",striped:"Stripe",jalur:"Stripe",条纹:"Stripe",floral:"Floral",flower:"Floral",flowers:"Floral",bunga:"Floral",花:"Floral",花卉:"Floral",damask:"Damask",大马士革:"Damask",geometric:"Geometric",几何:"Geometric",marble:"Marble",marmar:"Marble",大理石:"Marble",wood:"Wood",wooden:"Wood",kayu:"Wood",木纹:"Wood",木:"Wood",cement:"Cement",concrete:"Cement",simen:"Cement",水泥:"Cement",grasscloth:"Grasscloth",fluted:"Fluted",brick:"Brick",bricks:"Brick",bata:"Brick",砖:"Brick",kids:"Kids",children:"Kids","kanak-kanak":"Kids",儿童:"Kids",tile:"Tile",tiles:"Tile",jubin:"Tile",瓷砖:"Tile",botanical:"Botanical",leaf:"Botanical",leaves:"Botanical",daun:"Botanical",tropical:"Tropical",paisley:"Paisley","polka dot":"Polka Dot",dots:"Polka Dot",dot:"Polka Dot",mural:"Mural",terrazzo:"Terrazzo",stone:"Stone",batu:"Stone",石:"Stone",abstract:"Abstract",wave:"Wave",waves:"Wave",check:"Check",checked:"Check",checkered:"Check",metallic:"Metallic",text:"Text"};
+  const TYPW = [["korean","Korean"],["korea","Korean"],["韩国","Korean"],["european","European"],["europe","European"],["eropah","European"],["欧洲","European"],["asian","Asian"],["asia","Asian"],["亚洲","Asian"],["vinyl","Vinyl"],["fabric-backed","Vinyl"],["fabric backed","Vinyl"],["film","Film"],["architectural","Film"],["sticker","Sticker"],["stickers","Sticker"],["pelekat","Sticker"],["fabric","Fabric"],["fabrics","Fabric"],["fabrik","Fabric"],["布料","Fabric"],["mural","Mural"],["zenwalls","Mural"],["zen walls","Mural"]];
+  const UNIT = /(\d+(?:[.,]\d+)?)\s*(square\s*feet|square\s*foot|sq\.?\s*ft|sqft|sf|kaki persegi|平方英尺|square\s*met(?:er|re)s?|sq\.?\s*m\b|sqm|m2|m²|meter persegi|平方米|rolls?|gulung|rol\b|卷|met(?:er|re)s?\b|m\b|米)/i;
+  const types = () => Array.from(new Set(PRODUCTS.map(p => p.t).filter(Boolean)));
+  const parse = (v) => {
+    const raw = String(v || ""); const t = " " + raw.toLowerCase().replace(/[,;.!?]/g, " ").replace(/\s+/g, " ") + " ";
+    const colours = [], patterns = [], tps = [];
+    Object.keys(COLW).sort((a, b) => b.length - a.length).forEach(w => { if(t.includes(w.length > 2 ? " " + w + " " : w) && !colours.includes(COLW[w])) colours.push(COLW[w]); });
+    Object.keys(PATW).sort((a, b) => b.length - a.length).forEach(w => { if(t.includes(w.length > 2 ? " " + w + " " : w) && !patterns.includes(PATW[w])) patterns.push(PATW[w]); });
+    TYPW.forEach(([w, k]) => { if(t.includes(w.length > 2 ? " " + w + " " : w)){ types().filter(x => x.toLowerCase().includes(k.toLowerCase())).forEach(x => { if(!tps.includes(x)) tps.push(x); }); } });
+    let need = null; const m = raw.match(UNIT);
+    if(m){ const n = parseFloat(m[1].replace(",", ".")); const u = m[2].toLowerCase();
+      need = {qty: n, unit: /roll|gulung|rol|卷/.test(u) ? "rolls" : /sq\.?\s*m|sqm|m2|m²|square\s*met|persegi|平方米/.test(u) && !/kaki/.test(u) ? "sqm" : /feet|foot|ft|sf|kaki|英尺/.test(u) ? "sqft" : "m"}; }
+    const inStock = /\b(in stock|ada stok|available|有货)\b/.test(t) || /有货/.test(t);
+    const leftovers = raw.replace(UNIT, " ");
+    return {colours, patterns, types: tps, need, inStock, raw, hit: !!(colours.length || patterns.length || tps.length || need)};
+  };
+  const chip = (cls, txt) => `<span class="uchip ${cls}">${txt}</span>`;
+  const show = (u) => { const el = document.getElementById("understood"); if(!el) return;
+    if(!u.raw.trim()){ el.innerHTML = ""; return; }
+    if(!u.hit){ el.innerHTML = `<span class="ulbl">Searching names and codes for “${esc(u.raw)}”</span>`; return; }
+    el.innerHTML = `<span class="ulbl">Understood:</span>` + u.colours.map(c => chip("c", `<i style="background:${PARENT_HEX[c] || "#ccc"}"></i>${esc(c)}`)).join("") + u.patterns.map(x => chip("p", esc(x))).join("") +
+      (u.need ? chip("q", `Need ${u.need.qty.toLocaleString()} ${({rolls:"rolls",sqft:"sq ft",sqm:"sq m",m:"m"})[u.need.unit]}${u.need.unit !== "rolls" ? " → rolls per design" : ""}`) : "") + u.types.map(x => chip("t", esc(x))).join("") + (u.inStock ? chip("", "In stock only") : ""); };
+  const apply = (u) => {
+    clearFilters(true);
+    if(u.types.length){ state.types.clear(); u.types.forEach(x => state.types.add(x)); } else applyDefaultTypes();
+    u.colours.forEach(c => state.colours.add(c)); u.patterns.forEach(x => state.patterns.add(x));
+    state.inStock = u.inStock; state.need = u.need || null; state.query = "";
+    syncFilterInputs(); go("browse"); applyFilters();
+  };
+  return {parse, show, apply, COLW, PATW};
+})();
+function syncFilterInputs(){
+  document.querySelectorAll("#patternFilters input, #patternFiltersTop input").forEach(i => i.checked = state.patterns.has(i.value));
+  document.querySelectorAll("#typeFilters input, #typeFiltersTop input").forEach(i => i.checked = state.types.has(i.value));
+  document.querySelectorAll(".swatch").forEach(b => b.classList.toggle("on", state.colours.has(b.dataset.c)));
+  document.querySelectorAll(".instock-chip input").forEach(i => i.checked = state.inStock);
+}
+
+const GUIDE = (() => {
+  const S = {colours: [], pattern: "", qty: 400, unit: "sqft", type: ""};
+  const PATS = ["Plain", "Stripe", "Floral", "Damask", "Geometric", "Marble", "Wood", "Cement", "Grasscloth", "Fluted", "Brick", "Kids"];
+  const sample = (pat) => { const p = PRODUCTS.find(x => x.p === pat && x.i && (x.n || 0) > 0) || PRODUCTS.find(x => x.p === pat && x.i); return p ? p.i : ""; };
+  const TYPE_NOTE = (t) => { const p = PRODUCTS.find(x => x.t === t && x.z); const d = p ? rollDims(p) : {}; return d.area ? `${d.w} × ${d.l} m ≈ ${Math.round(d.area * 10.764)} sq ft per roll` : d.w ? `${d.w} m wide, per metre` : ""; };
+  const open = () => {
+    let m = document.getElementById("guide");
+    if(!m){ m = document.createElement("div"); m.id = "guide"; m.className = "guide"; document.body.appendChild(m); }
+    m.innerHTML = `<div class="guide-back" onclick="GUIDE.close()"></div><div class="guide-card" role="dialog" aria-label="Guided search">
+      <button class="guide-x" onclick="GUIDE.close()" aria-label="Close">✕</button>
+      <div class="gsteps"><span id="gs1" class="on"><b>1</b>Colour or design</span><i></i><span id="gs2"><b>2</b>How much</span><i></i><span id="gs3"><b>3</b>Product type <small>optional</small></span></div>
+      <div class="gpane on" id="gp1">
+        <p class="gq">What colour are you after?</p><p class="ghint">Pick one or two. Not sure? Choose a design instead, or skip.</p>
+        <div class="gcolours">${Object.entries(PARENT_HEX).map(([n, h]) => `<button onclick="GUIDE.col('${esc(n)}',this)"><i style="background:${h}"></i>${esc(n)}</button>`).join("")}</div>
+        <div class="gor"><i></i>or a design<i></i></div>
+        <div class="gpatterns">${PATS.map(x => `<button onclick="GUIDE.pat('${x}',this)"><img src="${esc(sample(x))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span>${x}</span></button>`).join("")}</div>
+        <div class="gor"><i></i>or <a href="#" onclick="GUIDE.close();go('visual');return false">I have a photo</a><i></i></div>
+        <div class="gnav"><span class="gsum" id="gsum1"></span><button class="tr-btn primary big" onclick="GUIDE.step(2)">Next: how much →</button></div>
+      </div>
+      <div class="gpane" id="gp2">
+        <p class="gq">How much do you need?</p><p class="ghint">Square feet, square metres or rolls. We only show designs with enough stock.</p>
+        <div class="gqty"><input id="gqty" type="number" inputmode="decimal" value="${S.qty}" oninput="GUIDE.qty(this.value)"><div class="gseg"><button class="${S.unit==="sqft"?"on":""}" onclick="GUIDE.unit('sqft',this)">sq ft</button><button class="${S.unit==="sqm"?"on":""}" onclick="GUIDE.unit('sqm',this)">sq m</button><button class="${S.unit==="rolls"?"on":""}" onclick="GUIDE.unit('rolls',this)">rolls</button></div></div>
+        <div class="gconv" id="gconv"></div>
+        <div class="gnav"><button class="tr-btn ghost big" onclick="GUIDE.step(1)">← Back</button><span class="gsum" id="gsum2"></span><button class="tr-btn primary big" onclick="GUIDE.step(3)">Next: product type →</button></div>
+      </div>
+      <div class="gpane" id="gp3">
+        <p class="gq">Any preference on product type?</p><p class="ghint">Optional. "Any" shows the closest designs across all types; you can still filter later.</p>
+        <div class="gtypes"><button class="on" onclick="GUIDE.type('',this)"><b>Any</b><small>closest designs across all types</small></button>${Array.from(new Set(PRODUCTS.map(p => p.t).filter(Boolean))).sort().map(t => `<button onclick="GUIDE.type('${esc(t)}',this)"><b>${esc(t)}</b><small>${esc(TYPE_NOTE(t))}</small></button>`).join("")}</div>
+        <div class="gnav"><button class="tr-btn ghost big" onclick="GUIDE.step(2)">← Back</button><span class="gsum" id="gsum3"></span><button class="tr-btn primary big" onclick="GUIDE.finish()">Show designs →</button></div>
+      </div></div>`;
+    document.body.style.overflow = "hidden"; m.classList.add("open"); S.colours = []; S.pattern = ""; S.type = ""; step(1);
+  };
+  const close = () => { const m = document.getElementById("guide"); if(m) m.classList.remove("open"); document.body.style.overflow = ""; };
+  const step = (n) => { [1,2,3].forEach(i => { document.getElementById("gp"+i).classList.toggle("on", i === n); const el = document.getElementById("gs"+i); el.className = i < n ? "done" : i === n ? "on" : ""; }); if(n === 2) conv(); sum(); document.querySelector(".guide-card").scrollTop = 0; };
+  const sum = () => { const parts = []; S.colours.forEach(c => parts.push(`<span class="uchip c"><i style="background:${PARENT_HEX[c]||"#ccc"}"></i>${esc(c)}</span>`)); if(S.pattern) parts.push(`<span class="uchip p">${esc(S.pattern)}</span>`); if(S.qty) parts.push(`<span class="uchip q">${Number(S.qty).toLocaleString()} ${({sqft:"sq ft",sqm:"sq m",rolls:"rolls"})[S.unit]}</span>`); parts.push(`<span class="uchip t">${esc(S.type || "Any type")}</span>`); ["gsum1","gsum2","gsum3"].forEach(id => { const e = document.getElementById(id); if(e) e.innerHTML = parts.join(""); }); };
+  const col = (n, b) => { const i = S.colours.indexOf(n); if(i >= 0){ S.colours.splice(i, 1); b.classList.remove("on"); } else { if(S.colours.length >= 2){ toast("Up to two colours"); return; } S.colours.push(n); b.classList.add("on"); } sum(); };
+  const pat = (x, b) => { S.pattern = S.pattern === x ? "" : x; document.querySelectorAll(".gpatterns button").forEach(e => e.classList.toggle("on", e === b && S.pattern === x)); sum(); };
+  const type = (t, b) => { S.type = t; document.querySelectorAll(".gtypes button").forEach(e => e.classList.toggle("on", e === b)); sum(); };
+  const unit = (u, b) => { S.unit = u; document.querySelectorAll(".gseg button").forEach(e => e.classList.toggle("on", e === b)); conv(); };
+  const qty = (v) => { S.qty = parseFloat(v) || 0; conv(); };
+  const conv = () => { const q = S.qty || 0; const el = document.getElementById("gconv"); if(!el) return;
+    if(!q){ el.innerHTML = "Leave empty to skip the quantity."; sum(); return; }
+    if(S.unit === "rolls"){ el.innerHTML = `<b>${q} rolls</b>: we show designs with at least ${q} rolls in stock.`; sum(); return; }
+    const sqft = S.unit === "sqft" ? q : q * 10.764;
+    el.innerHTML = `<b>${q.toLocaleString()} ${S.unit === "sqft" ? "sq ft" : "sq m"}</b> ≈ ${Math.ceil(sqft / 178)} Korean rolls (1.06 × 15.6 m) · ${Math.ceil(sqft / 57)} European rolls (0.53 × 10 m) · ${Math.ceil(sqft / 10.764 / 1.06)} m of a 1.06 m mural. No wastage or pattern-repeat allowance. Each result shows the rolls it needs for its own roll size.`; sum(); };
+  const finish = () => { close(); clearFilters(true); if(S.type){ state.types.clear(); state.types.add(S.type); } else { state.types.clear(); }   // Any = every type
+    S.colours.forEach(c => state.colours.add(c)); if(S.pattern) state.patterns.add(S.pattern); state.inStock = true; state.need = S.qty ? {qty: S.qty, unit: S.unit} : null; state.query = "";
+    syncFilterInputs(); go("browse"); applyFilters(); toast("Here are the designs for your three answers. Change any filter on the left."); };
+  return {open, close, step, col, pat, type, unit, qty, finish};
+})();
+
 /* ================= FRAME 2 : FILTERS ================= */
-const state = {patterns:new Set(), colours:new Set(), types:new Set(), collection:"", inStock:false, query:""};
+const state = {patterns:new Set(), colours:new Set(), types:new Set(), collection:"", inStock:false, query:"", need:null};   // need: {qty, unit:"rolls"|"sqft"|"sqm"|"m"}
+/* roll geometry from the roll-size text, e.g. "1.06metres (Width) x 15.6metres (Length)" */
+function rollDims(p){ const z = String(p.z || ""); const w = parseFloat((z.match(/([\d.]+)\s*m(?:etres?)?\s*\(?\s*width/i) || [])[1]) || widthOf(p) && parseFloat(widthOf(p)) / 100 || 0;
+  const l = parseFloat((z.match(/([\d.]+)\s*m(?:etres?)?\s*\(?\s*length/i) || [])[1]) || 0; return {w, l, area: w && l ? w * l : 0}; }
+function rollsNeeded(p, need){ if(!need || !need.qty) return null; if(need.unit === "rolls") return need.qty;
+  const sqm = need.unit === "sqm" ? need.qty : need.unit === "sqft" ? need.qty / 10.764 : null; const d = rollDims(p);
+  if(need.unit === "m") return d.l ? Math.ceil(need.qty / d.l) : need.qty;            // metres of roll
+  if(sqm == null) return null; if(d.area) return Math.ceil(sqm / d.area); if(d.w) return Math.ceil(sqm / d.w); return null; }
 const DEF_TYPES = new Set();    // wallpaper types, pre-selected by default
 let FILTERED = [], shown = 0;
 const CHUNK = 48;
@@ -2750,6 +2906,7 @@ function typesAreDefault(){
   return state.types.size === DEF_TYPES.size && [...state.types].every(t => DEF_TYPES.has(t));
 }
 function clearFilters(silent){
+  state.need = null;
   state.patterns.clear(); state.colours.clear(); state.types.clear();
   state.collection=""; state.inStock=false; state.query="";
   document.querySelectorAll("#patternFilters input, #patternFiltersTop input, #typeFilters input, #typeFiltersTop input").forEach(i=>i.checked=false);
@@ -2777,6 +2934,7 @@ function applyFilters(){
     if(state.types.size && !state.types.has(p.t)) return false;
     if(state.collection && p.c !== state.collection) return false;
     if(state.inStock && p.n <= 0) return false;
+    if(state.need){ const r = rollsNeeded(p, state.need); if(r != null && (p.n || 0) < r) return false; }
     if(q && !((p.sku+" "+(p.sn||"")+" "+p.t+" "+p.c+" "+p.p+" "+(p.k||[]).join(" ")).toLowerCase().includes(q))) return false;
     return true;
   });
@@ -2811,6 +2969,7 @@ function applyFilters(){
     state.types.forEach(t=>chips.push(`<span class="achip">${esc(t)} <button data-drop-type="${esc(t)}">×</button></span>`));
   }
   state.colours.forEach(c=>chips.push(`<span class="achip">${esc(c)} <button data-drop-colour="${esc(c)}">×</button></span>`));
+  if(state.need) chips.push(`<span class="achip need">Need ${state.need.qty.toLocaleString()} ${({rolls:"rolls",sqft:"sq ft",sqm:"sq m",m:"m"})[state.need.unit]} <button onclick="state.need=null;applyFilters()">×</button></span>`);
   document.getElementById("activeChips").innerHTML = chips.join("");
 
   /* top-bar badges mirror the active counts */
@@ -3074,6 +3233,22 @@ function handleFile(file){
   rd.onload = e => { VS.file = file; VS.src = e.target.result; runSearch(); };
   rd.readAsDataURL(file);
 }
+/* ---- paste (Ctrl+V) or drop an image anywhere on the Visual Search page ---- */
+document.addEventListener("paste", e => {
+  const f = [...(e.clipboardData && e.clipboardData.files || [])].find(x => x.type.startsWith("image/")); if(!f) return;
+  if(!document.getElementById("frame-visual").classList.contains("active")) go("visual");
+  e.preventDefault(); handleFile(f); toast("Pasted image, searching…");
+});
+document.addEventListener("dragover", e => { if(document.getElementById("frame-visual").classList.contains("active")){ e.preventDefault(); document.body.classList.add("dragging"); } });
+document.addEventListener("dragleave", e => { if(e.relatedTarget === null) document.body.classList.remove("dragging"); });
+document.addEventListener("drop", e => {
+  if(!document.getElementById("frame-visual").classList.contains("active")) return;
+  e.preventDefault(); document.body.classList.remove("dragging");
+  const f = [...(e.dataTransfer.files || [])].find(x => x.type.startsWith("image/"));
+  if(f){ handleFile(f); return; }
+  const url = e.dataTransfer.getData("text/uri-list") || e.dataTransfer.getData("text/plain");   // an image dragged from another tab
+  if(url && /^https?:\/\//.test(url)) runMatch(url);
+});
 /* ---- select the wallpaper: drag a box over the part to match (mouse or finger), then search that area ---- */
 const SEL = { on: false, box: null, start: null };
 function selToggle(){
@@ -3117,13 +3292,17 @@ async function runSearch(more){
     if(more){
       r = await fetch(API + "/search", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(vsParams({source:"more"}))});
     } else {
+      /* v9.9: two passes. The fast pass skips the slow verdict checks and paints within seconds; the full pass replaces it. */
       const fd = new FormData();
       fd.append("file", VS.file, "query.jpg");
-      fd.append("params_json", JSON.stringify(vsParams({source:"photo"})));
-      r = await fetch(API + "/search/photo", {method:"POST", body: fd});
+      fd.append("params_json", JSON.stringify(vsParams({source:"photo", fast:true, top_k: 24})));
+      const rf = await fetch(API + "/search/photo", {method:"POST", body: fd});
+      if(rf.ok){ const jf = await rf.json(); applyResult(jf, false); setRefining(true); }
+      r = await fetch(API + "/search", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(vsParams({source:"photo"}))});
     }
     if(!r.ok){ const t = await r.text(); throw new Error(r.status + " " + t.slice(0,200)); }
     const j = await r.json();
+    setRefining(false);
     applyResult(j, !!more);
   }catch(e){
     console.error(e);
@@ -3131,6 +3310,8 @@ async function runSearch(more){
     toast("Search failed: " + (e.message || e));
   }finally{ clearInterval(tick); VS.busy = false; }
 }
+function setRefining(on){ let el = document.getElementById("vsRefine"); if(!el){ el = document.createElement("div"); el.id = "vsRefine"; el.className = "vs-refine"; const h = document.querySelector("#vsResult .vs-grid-head"); if(h) h.insertAdjacentElement("afterend", el); else return; }
+  el.style.display = on ? "" : "none"; el.innerHTML = on ? `<i></i> First results shown · refining the full ranking in the background…` : ""; }
 function candToProduct(c){
   const p = byId.get(c.sku);
   if(p){ if(p.w == null && c.width_m) p.w = c.width_m; return p; }
@@ -3212,8 +3393,7 @@ function renderVS(){
 function vsMore(){ if(VS.file) runSearch(true); }
 function vsTopPDF(){
   if(!VS.list || !VS.list.length){ toast("Nothing to export"); return; }
-  exportPDF("Visual search, top " + Math.min(20, VS.list.length), VS.list.slice(0, 20).map(x => x.p.sku),
-            {query: VS.src, labels: Object.fromEntries(VS.list.slice(0,20).map(x => [x.p.sku, x.lbl.txt]))});
+  downloadPDF("Visual search, top " + Math.min(20, VS.list.length), VS.list.slice(0, 20).map(x => x.p.sku));
 }
 function vsSelectAll(){ VS.list.slice(0,20).forEach(x => SELECTED.add(x.p.sku)); document.querySelectorAll("#vsGrid .pcard").forEach(el => el.classList.toggle("sel", SELECTED.has(el.dataset.sku))); updateSelbar(); toast("Top " + Math.min(20, VS.list.length) + " added to your selection"); }
 

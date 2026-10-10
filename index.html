@@ -1683,6 +1683,9 @@
   .gqty{display:flex;gap:10px;align-items:center;flex-wrap:wrap} .gqty input{width:190px;border:2px solid var(--sand-200);border-radius:14px;padding:14px;font-size:28px;font-weight:800;font-family:inherit;background:var(--paper);color:var(--ink)}
   .gseg{display:inline-flex;border:2px solid var(--sand-200);border-radius:999px;overflow:hidden} .gseg button{border:0;background:var(--card,#fff);padding:14px 20px;font-weight:800;font-size:16px;cursor:pointer;font-family:inherit;color:var(--ink)} .gseg button.on{background:var(--ink);color:#fff}
   .gconv{margin-top:14px;background:var(--sand-100);border-radius:14px;padding:16px 18px;font-size:15.5px;line-height:1.5;color:var(--ink)} .gconv b{color:var(--ink)}
+  .gtypesel select{width:100%;max-width:720px;border:2px solid var(--sand-200);border-radius:14px;padding:16px 18px;font-size:17px;font-weight:700;font-family:inherit;background:var(--card,#fff);color:var(--ink);min-height:56px}
+  .gpatterns span small{display:block;font-size:11.5px;font-weight:600;color:var(--ink-soft);margin-top:2px}
+  .gpatterns{max-height:46vh;overflow:auto;padding:2px}
   .gtypes{display:grid;grid-template-columns:repeat(3,1fr);gap:10px} .gtypes button{border:3px solid transparent;border-radius:16px;background:var(--sand-100);padding:14px 16px;text-align:left;cursor:pointer;font-family:inherit;color:var(--ink)} .gtypes b{display:block;font-size:16px} .gtypes small{display:block;color:var(--ink-soft);margin-top:4px;font-size:13px} .gtypes button.on{border-color:var(--ink);background:var(--card,#fff)}
   .gnav{display:flex;justify-content:space-between;align-items:center;margin-top:22px;gap:12px;flex-wrap:wrap} .gsum{display:flex;gap:8px;flex-wrap:wrap;align-items:center;flex:1;justify-content:center}
   @media(max-width:700px){.gcolours{grid-template-columns:repeat(4,1fr)}.gpatterns{grid-template-columns:repeat(3,1fr)}.gtypes{grid-template-columns:1fr}.gq{font-size:32px}.guide-card{padding:20px 16px;border-radius:22px}.gsteps{font-size:13px;gap:6px} .gsteps small{display:none}.gnav{flex-direction:column;align-items:stretch}.gnav .tr-btn{width:100%;justify-content:center}.gqty{align-items:stretch}.gqty input{width:100%}.gseg{width:100%}.gseg button{flex:1;padding:14px 8px}
@@ -1734,7 +1737,7 @@
         <p class="sub" id="heroSub">Search the entire WCD catalogue the way designers think: by look, colour and mood, not by SKU code.</p>
         <form class="searchbar" id="heroForm" onsubmit="heroSearch(event)">
           <input id="heroQ" type="text" placeholder="Try &quot;floral&quot;, &quot;plain grey&quot;, a collection or a SKU…" autocomplete="off" oninput="heroParse(this.value)">
-          <button type="button" class="hero-reset" id="heroReset" onclick="heroReset()">✕ <span data-i18n="hero.reset">Reset</span></button>
+          <button type="button" class="hero-reset" id="heroResetBtn" onclick="heroReset()">✕ <span data-i18n="hero.reset">Reset</span></button>
           <button type="submit">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.8-3.8"/></svg>
             <span>Search</span>
@@ -2810,8 +2813,11 @@ function syncFilterInputs(){
 
 const GUIDE = (() => {
   const S = {colours: [], pattern: "", qty: 400, unit: "sqft", type: ""};
-  const PATS = ["Plain", "Stripe", "Floral", "Damask", "Geometric", "Marble", "Wood", "Cement", "Grasscloth", "Fluted", "Brick", "Kids"];
-  const sample = (pat) => { const p = PRODUCTS.find(x => x.p === pat && x.i && (x.n || 0) > 0) || PRODUCTS.find(x => x.p === pat && x.i); return p ? p.i : ""; };
+  const patterns = () => { const m = new Map(); PRODUCTS.forEach(p => { if(p.p && p.i) m.set(p.p, (m.get(p.p) || 0) + 1); }); return [...m.entries()].sort((a, b) => b[1] - a[1]).map(([k, n]) => ({k, n})); };
+  const sample = (pat) => { /* a mid-tone, in-stock design reads better as a tile than a near-white one */
+    const cands = PRODUCTS.filter(x => x.p === pat && x.i && (x.n || 0) > 0); const pool = cands.length ? cands : PRODUCTS.filter(x => x.p === pat && x.i);
+    const lum = (hex) => { const h = (hex || "#cccccc").replace("#", ""); const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), b = parseInt(h.slice(4, 6), 16); return (0.299 * r + 0.587 * g + 0.114 * b) / 255; };
+    const pick = pool.slice(0, 60).sort((a, b) => Math.abs(lum(a.h && a.h[0] && a.h[0][0]) - 0.5) - Math.abs(lum(b.h && b.h[0] && b.h[0][0]) - 0.5))[0]; return pick ? pick.i : ""; };
   const TYPE_NOTE = (t) => { const p = PRODUCTS.find(x => x.t === t && x.z); const d = p ? rollDims(p) : {}; return d.area ? `${d.w} × ${d.l} m ≈ ${Math.round(d.area * 10.764)} sq ft per roll` : d.w ? `${d.w} m wide, per metre` : ""; };
   const open = () => {
     let m = document.getElementById("guide");
@@ -2823,34 +2829,39 @@ const GUIDE = (() => {
         <p class="gq">What colour are you after?</p><p class="ghint">Pick one or two. Not sure? Choose a design instead, or skip.</p>
         <div class="gcolours">${Object.entries(PARENT_HEX).map(([n, h]) => `<button onclick="GUIDE.col('${esc(n)}',this)"><i style="background:${h}"></i>${esc(n)}</button>`).join("")}</div>
         <div class="gor"><i></i>or a design<i></i></div>
-        <div class="gpatterns">${PATS.map(x => `<button onclick="GUIDE.pat('${x}',this)"><img src="${esc(sample(x))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span>${x}</span></button>`).join("")}</div>
+        <div class="gpatterns">${patterns().map(({k, n}) => `<button onclick="GUIDE.pat('${esc(k)}',this)"><img src="${esc(sample(k))}" alt="" loading="lazy" onerror="this.style.visibility='hidden'"><span>${esc(k)}<small>${n.toLocaleString()}</small></span></button>`).join("")}</div>
         <div class="gor"><i></i>or <a href="#" onclick="GUIDE.close();go('visual');return false">I have a photo</a><i></i></div>
         <div class="gnav"><span class="gsum" id="gsum1"></span><button class="tr-btn primary big" onclick="GUIDE.step(2)">Next: how much →</button></div>
       </div>
       <div class="gpane" id="gp2">
         <p class="gq">How much do you need?</p><p class="ghint">Square feet, square metres or rolls. We only show designs with enough stock.</p>
-        <div class="gqty"><input id="gqty" type="number" inputmode="decimal" value="${S.qty}" oninput="GUIDE.qty(this.value)"><div class="gseg"><button class="${S.unit==="sqft"?"on":""}" onclick="GUIDE.unit('sqft',this)">sq ft</button><button class="${S.unit==="sqm"?"on":""}" onclick="GUIDE.unit('sqm',this)">sq m</button><button class="${S.unit==="rolls"?"on":""}" onclick="GUIDE.unit('rolls',this)">rolls</button></div></div>
+        <div class="gqty"><input id="gqty" type="number" inputmode="decimal" value="${S.qty}" oninput="GUIDE.qty(this.value)"><div class="gseg" id="gseg"><button class="${S.unit==="sqft"?"on":""}" onclick="GUIDE.unit('sqft',this)">sq ft</button><button class="${S.unit==="sqm"?"on":""}" onclick="GUIDE.unit('sqm',this)">sq m</button><button class="${S.unit==="rolls"?"on":""}" data-u="rolls" onclick="GUIDE.unit('rolls',this)">rolls</button><button class="${S.unit==="m"?"on":""}" data-u="m" onclick="GUIDE.unit('m',this)">metres</button></div></div>
         <div class="gconv" id="gconv"></div>
         <div class="gnav"><button class="tr-btn ghost big" onclick="GUIDE.step(1)">← Back</button><span class="gsum" id="gsum2"></span><button class="tr-btn primary big" onclick="GUIDE.step(3)">Next: product type →</button></div>
       </div>
       <div class="gpane" id="gp3">
         <p class="gq">Any preference on product type?</p><p class="ghint">Optional. "Any" shows the closest designs across all types; you can still filter later.</p>
-        <div class="gtypes"><button class="on" onclick="GUIDE.type('',this)"><b>Any</b><small>closest designs across all types</small></button>${Array.from(new Set(PRODUCTS.map(p => p.t).filter(Boolean))).sort().map(t => `<button onclick="GUIDE.type('${esc(t)}',this)"><b>${esc(t)}</b><small>${esc(TYPE_NOTE(t))}</small></button>`).join("")}</div>
+        <div class="gtypesel"><select id="gtype" onchange="GUIDE.type(this.value)"><option value="">Any product type (closest designs across all types)</option>${Array.from(new Set(PRODUCTS.map(p => p.t).filter(Boolean))).sort().map(t => `<option value="${esc(t)}">${esc(t)}${TYPE_NOTE(t) ? " · " + esc(TYPE_NOTE(t)) : ""}</option>`).join("")}</select></div>
+        <p class="ghint" id="gtypenote" style="margin-top:12px"></p>
         <div class="gnav"><button class="tr-btn ghost big" onclick="GUIDE.step(2)">← Back</button><span class="gsum" id="gsum3"></span><button class="tr-btn primary big" onclick="GUIDE.finish()">Show designs →</button></div>
       </div></div>`;
-    document.body.style.overflow = "hidden"; m.classList.add("open"); S.colours = []; S.pattern = ""; S.type = ""; step(1);
+    document.body.style.overflow = "hidden"; m.classList.add("open"); S.colours = []; S.pattern = ""; S.type = ""; step(1); type("");
   };
   const close = () => { const m = document.getElementById("guide"); if(m) m.classList.remove("open"); document.body.style.overflow = ""; };
   const step = (n) => { [1,2,3].forEach(i => { document.getElementById("gp"+i).classList.toggle("on", i === n); const el = document.getElementById("gs"+i); el.className = i < n ? "done" : i === n ? "on" : ""; }); if(n === 2) conv(); sum(); document.querySelector(".guide-card").scrollTop = 0; };
-  const sum = () => { const parts = []; S.colours.forEach(c => parts.push(`<span class="uchip c"><i style="background:${PARENT_HEX[c]||"#ccc"}"></i>${esc(c)}</span>`)); if(S.pattern) parts.push(`<span class="uchip p">${esc(S.pattern)}</span>`); if(S.qty) parts.push(`<span class="uchip q">${Number(S.qty).toLocaleString()} ${({sqft:"sq ft",sqm:"sq m",rolls:"rolls"})[S.unit]}</span>`); parts.push(`<span class="uchip t">${esc(S.type || "Any type")}</span>`); ["gsum1","gsum2","gsum3"].forEach(id => { const e = document.getElementById(id); if(e) e.innerHTML = parts.join(""); }); };
+  const sum = () => { const parts = []; S.colours.forEach(c => parts.push(`<span class="uchip c"><i style="background:${PARENT_HEX[c]||"#ccc"}"></i>${esc(c)}</span>`)); if(S.pattern) parts.push(`<span class="uchip p">${esc(S.pattern)}</span>`); if(S.qty) parts.push(`<span class="uchip q">${Number(S.qty).toLocaleString()} ${({sqft:"sq ft",sqm:"sq m",rolls:"rolls",m:"m"})[S.unit]}</span>`); parts.push(`<span class="uchip t">${esc(S.type || "Any type")}</span>`); ["gsum1","gsum2","gsum3"].forEach(id => { const e = document.getElementById(id); if(e) e.innerHTML = parts.join(""); }); };
   const col = (n, b) => { const i = S.colours.indexOf(n); if(i >= 0){ S.colours.splice(i, 1); b.classList.remove("on"); } else { if(S.colours.length >= 2){ toast("Up to two colours"); return; } S.colours.push(n); b.classList.add("on"); } sum(); };
   const pat = (x, b) => { S.pattern = S.pattern === x ? "" : x; document.querySelectorAll(".gpatterns button").forEach(e => e.classList.toggle("on", e === b && S.pattern === x)); sum(); };
-  const type = (t, b) => { S.type = t; document.querySelectorAll(".gtypes button").forEach(e => e.classList.toggle("on", e === b)); sum(); };
+  const metreType = (t) => { const p = PRODUCTS.find(x => x.t === t && x.z); return !!(t && p && !rollDims(p).l); };
+  const type = (t) => { S.type = t || ""; const note = document.getElementById("gtypenote"); if(note) note.textContent = t ? (TYPE_NOTE(t) ? `${t}: ${TYPE_NOTE(t)}.` : t) + (metreType(t) ? " Sold per metre, so quantities are in metres." : " Sold in rolls.") : "Any type: results show the rolls or metres each design needs.";
+    document.querySelectorAll("#gseg [data-u=rolls]").forEach(b => b.style.display = metreType(t) ? "none" : ""); document.querySelectorAll("#gseg [data-u=m]").forEach(b => b.style.display = (!t || metreType(t)) ? "" : "none");
+    if(metreType(t) && S.unit === "rolls"){ S.unit = "m"; } if(t && !metreType(t) && S.unit === "m"){ S.unit = "sqft"; } document.querySelectorAll("#gseg button").forEach(b => b.classList.toggle("on", (b.dataset.u || b.textContent.replace(/\s/g, "").replace("sqft", "sqft").replace("sqm", "sqm")) === S.unit || (b.textContent.trim() === "sq ft" && S.unit === "sqft") || (b.textContent.trim() === "sq m" && S.unit === "sqm"))); conv(); sum(); };
   const unit = (u, b) => { S.unit = u; document.querySelectorAll(".gseg button").forEach(e => e.classList.toggle("on", e === b)); conv(); };
   const qty = (v) => { S.qty = parseFloat(v) || 0; conv(); };
   const conv = () => { const q = S.qty || 0; const el = document.getElementById("gconv"); if(!el) return;
     if(!q){ el.innerHTML = "Leave empty to skip the quantity."; sum(); return; }
     if(S.unit === "rolls"){ el.innerHTML = `<b>${q} rolls</b>: we show designs with at least ${q} rolls in stock.`; sum(); return; }
+    if(S.unit === "m"){ el.innerHTML = `<b>${q} m</b>: for metre goods we show designs with at least ${q} m in stock; for roll goods the metres are converted to rolls by each design's roll length.`; sum(); return; }
     const sqft = S.unit === "sqft" ? q : q * 10.764;
     el.innerHTML = `<b>${q.toLocaleString()} ${S.unit === "sqft" ? "sq ft" : "sq m"}</b> ≈ ${Math.ceil(sqft / 178)} Korean rolls (1.06 × 15.6 m) · ${Math.ceil(sqft / 57)} European rolls (0.53 × 10 m) · ${Math.ceil(sqft / 10.764 / 1.06)} m of a 1.06 m mural. No wastage or pattern-repeat allowance. Each result shows the rolls it needs for its own roll size.`; sum(); };
   const finish = () => { close(); clearFilters(true); if(S.type){ state.types.clear(); state.types.add(S.type); } else { state.types.clear(); }   // Any = every type

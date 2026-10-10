@@ -1531,7 +1531,7 @@
   .staff-only{display:none!important} body.staff .staff-only{display:inline-flex!important}
   .tag-fix{border:1px solid var(--sand-300);background:#fff;color:var(--ink);border-radius:999px;font-size:11px;padding:2px 8px;min-height:22px;cursor:pointer;align-items:center;gap:4px;font-weight:700} .tag-fix:hover{background:var(--saffron);border-color:var(--saffron)}
   .pm-chips .tag-fix{font-size:12px;min-height:28px;padding:4px 10px}
-  .tag-pop{position:absolute;width:420px;background:var(--card,#fff);border:1px solid var(--sand-200);border-radius:16px;box-shadow:0 24px 60px -20px rgba(27,31,42,.45);padding:14px;z-index:60;display:flex;flex-direction:column;gap:8px;color:var(--ink)}
+  .tag-pop{position:fixed;width:420px;z-index:150;background:var(--card,#fff);border:1px solid var(--sand-200);border-radius:16px;box-shadow:0 24px 60px -20px rgba(27,31,42,.45);padding:14px;display:flex;flex-direction:column;gap:8px;color:var(--ink)}
   .tag-pop b{font-size:14px} .tag-pop>span{font-size:12px;color:var(--ink-soft)}
   .tag-pop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px} .tag-pop-grid button{border:1px solid var(--sand-200);background:var(--paper);border-radius:10px;padding:8px 6px;font-size:12.5px;cursor:pointer;color:var(--ink);min-height:36px} .tag-pop-grid button.on{background:var(--ink);color:#fff;border-color:var(--ink)} .tag-pop-grid button:hover{border-color:var(--ink)}
   .tag-pop-close{align-self:flex-end;background:transparent;border:0;color:var(--ink-soft);font-size:12.5px;cursor:pointer;padding:6px 8px}
@@ -1578,7 +1578,20 @@
   .frame-tabs button,.wm-left button,.wm-right button[data-frame]{text-transform:none;letter-spacing:0;font-size:14px}
   .page-band h2,.vs-head h2,.lay-head h2,.hero h1{text-transform:none;letter-spacing:-.02em}
   .hero-mosaic .tile img{border-radius:14px}
-  @media(max-width:560px){.frame-tabs{overflow-x:auto;justify-content:flex-start;padding:3px;scrollbar-width:none}.frame-tabs button{flex:0 0 auto;font-size:13px;padding:8px 10px;min-height:34px}.frame-tabs .tab-ind{top:3px;bottom:3px}}
+  @media(max-width:560px){
+    .topbar-inner{padding:8px 12px 0;gap:8px;flex-wrap:wrap;align-items:center}
+    .logo{gap:8px;margin-right:auto;order:1} .logo .mark svg{width:28px;height:28px} .logo .word{font-size:16px} .logo .word small{font-size:9px;letter-spacing:.16em;margin-top:2px}
+    .lang{display:inline-flex!important;order:2;margin-right:0;padding:2px} .lang button{padding:6px 7px;font-size:11px;letter-spacing:.04em;min-height:28px}
+    .theme-btn{order:3;width:36px;height:36px;margin-right:0}
+    .quote-btn{order:4;width:36px;height:36px;padding:0;border-radius:999px;justify-content:center;position:relative;font-size:0;gap:0} .quote-btn svg{width:16px;height:16px} .quote-btn>span:not(.quote-count){display:none}
+    .quote-btn .quote-count{position:absolute;right:-5px;top:-5px;font-size:11px;min-width:18px;height:18px;padding:0 4px;display:flex;align-items:center;justify-content:center;border:2px solid var(--paper)}
+    .frame-tabs{order:5;flex:1 1 100%;width:100%;margin:6px 0 0;background:transparent;padding:0 0 8px;gap:4px;overflow-x:auto;justify-content:flex-start;scrollbar-width:none;border-radius:0}
+    .frame-tabs::-webkit-scrollbar{display:none} .frame-tabs .tab-ind{display:none}
+    .frame-tabs button{flex:0 0 auto;font-size:14px;padding:9px 14px;min-height:38px;border-radius:999px;background:var(--sand-100);color:var(--ink)} .frame-tabs button.active{background:var(--ink)!important;color:#fff!important}
+    html[data-theme="dark"] .frame-tabs button{background:var(--sand-100);color:#C9CDD6} html[data-theme="dark"] .frame-tabs button.active{background:#fff!important;color:#121418!important}
+    html[data-theme="dark"] .quote-btn .quote-count{border-color:#121418}
+    .topbar{position:sticky;top:0}
+  }
 
   /* ===== v9.5: nav visibility, fuller wall, Victorian ground, 3D ===== */
   .frame-tabs .tab-ind{background:var(--ink)!important;border:0!important;border-radius:999px!important;top:4px!important;bottom:4px!important;height:auto!important;box-shadow:0 6px 14px -6px rgba(27,31,42,.5)}
@@ -2415,7 +2428,7 @@ function init(data){
   MOTION.tabs(); MOTION.reveal();
   MOTION.cards(document.getElementById("homeGrid"), {each: .05});
   [["statProducts", PRODUCTS.length], ["statColls", new Set(PRODUCTS.map(p=>p.c).filter(Boolean)).size], ["statTypes", new Set(PRODUCTS.map(p=>p.t).filter(Boolean)).size]].forEach(([id, n]) => MOTION.count(document.getElementById(id), n));
-  const fitTabs = () => { const v = document.querySelector('.frame-tabs button[data-frame="visual"]'); if(v) v.textContent = window.innerWidth <= 560 ? "Photo" : "Visual Search"; };
+  const fitTabs = () => {};   // v9.9.3: the mobile tab row scrolls, so full names stay (and follow the language switch)
   fitTabs(); window.addEventListener("resize", fitTabs);
 
   /* deep link: #p=SKU (used by the product WhatsApp share) opens that product */
@@ -3697,9 +3710,10 @@ function tagFixOpen(sku, btn){
     <div class="tag-pop-grid">${PATTERN_LIST.map(x => `<button class="${x === cur ? "on" : ""}" onclick="tagFixSave('${esc(sku)}','${esc(x)}')">${esc(x)}</button>`).join("")}</div>
     <button class="tag-pop-close" onclick="this.parentNode.remove()">Cancel</button>`;
   document.body.appendChild(pop);
-  const r = btn.getBoundingClientRect(); const w = 420, h = pop.offsetHeight || 360;
+  const r = btn.getBoundingClientRect(); const w = Math.min(420, window.innerWidth - 16), h = pop.offsetHeight || 360;
+  pop.style.width = w + "px";
   pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + "px";
-  pop.style.top = (r.bottom + 8 + h > window.innerHeight ? r.top - h - 8 : r.bottom + 8) + window.scrollY + "px";
+  pop.style.top = Math.max(8, (r.bottom + 8 + h > window.innerHeight ? r.top - h - 8 : r.bottom + 8)) + "px";
 }
 async function tagFixSave(sku, pattern){
   const p = byId.get(sku) || {};
@@ -3718,7 +3732,7 @@ async function loadTags(){
   let d; try{ d = await staffFetch("/training/tagreview?limit=12" + (TAGS.filter ? "&pattern=" + encodeURIComponent(TAGS.filter) : "")); }catch(e){ el.innerHTML = "Could not load"; return; }
   const pairs = (d.pairs || []).map(([k, n]) => `<button class="tr-btn sm ${TAGS.filter && k.includes(TAGS.filter) ? "primary" : ""}" onclick="tagFilter('${esc(k.split(" vs ")[0])}')">${esc(k)} <b>${n}</b></button>`).join("");
   el.innerHTML = `<div class="tr-panel">
-      <h4>Pattern review <span class="tr-msg">· ${d.todo.toLocaleString()} to decide · ${d.decided.toLocaleString()} decided</span></h4>
+      <h4>Pattern review <span class="tr-msg">· ${(d.todo||0).toLocaleString()} to decide · ${(d.decided||0).toLocaleString()} decided</span></h4>
       <p class="tr-msg">Two systems tagged these designs with a different pattern. Look at the picture and pick the pattern a dealer would use to find it. Your decision applies on the website tonight and shows in the central sheet.</p>
       <div class="tag-pairs">${TAGS.filter ? `<button class="tr-btn sm" onclick="tagFilter('')">All pairs</button>` : ""}${pairs}</div>
     </div>

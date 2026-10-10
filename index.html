@@ -15,7 +15,7 @@
   var realFetch = window.fetch.bind(window);
   window.fetch = function(u, o){ return realFetch(typeof u === "string" ? fix(u) : u, o); };
   var patch = function(el){ if(el.nodeType !== 1) return;
-    if(el.tagName === "IMG" || el.tagName === "SOURCE"){ var s = el.getAttribute("src"); if(s && (s.indexOf("/marketplace/") === 0)) el.src = host + s; }
+    if(el.tagName === "IMG" || el.tagName === "SOURCE"){ var s = el.getAttribute("src"); if(s && (s.indexOf("/marketplace/") === 0 || s.indexOf("/review/") === 0)) el.src = host + s; }
     if(el.tagName === "A"){ var hr = el.getAttribute("href"); if(hr && hr.indexOf("/review") === 0) el.href = host + hr; } };
   new MutationObserver(function(ms){ ms.forEach(function(m){ m.addedNodes.forEach(function(n){ patch(n); if(n.querySelectorAll) n.querySelectorAll("img,source,a").forEach(patch); }); if(m.type === "attributes") patch(m.target); }); })
     .observe(document.documentElement, {childList: true, subtree: true, attributes: true, attributeFilter: ["src", "href"]});
@@ -3447,7 +3447,7 @@ async function saveFeedback(){
 }
 document.addEventListener("click", e => {
   const b = e.target.closest(".fbrow .fb");
-  if(!b) return;
+  if(!b || !b.closest(".fbrow").dataset.fb) return;   // only the Visual Search result rows (data-fb); the daily game has its own handlers
   e.stopPropagation(); e.preventDefault();
   const sku = b.closest(".fbrow").dataset.fb, v = b.dataset.v === "1";
   if(VS.fb[sku] === v) delete VS.fb[sku]; else VS.fb[sku] = v;
@@ -3629,7 +3629,7 @@ async function loadGame(){
   const pb = document.getElementById("trProgBar"), tot = t.total + ph.total; if(pb) pb.style.width = tot ? Math.round(100 * (t.done + ph.done) / tot) + "%" : "0%";
   document.getElementById("gmList").innerHTML = t.items.length ? t.items.map(it => { const p = byId.get(it.ref_sku) || {};
     return `<div class="tr-item ${it.status}" onclick="openGame('${esc(it.ref_sku)}')">
-      <img src="${esc(p.i || it.ref.image)}" alt="" loading="lazy" onerror="this.src='${esc(it.ref.thumb)}'">
+      <img src="${esc(p.i || it.ref.image)}" alt="" loading="lazy" onerror="if(this.src.indexOf('${esc(it.ref.thumb)}')<0){this.src='${esc(it.ref.thumb)}'}else{imgFail(this)}">
       <div class="tr-item-meta"><span class="tr-kind">${esc(p.t || "Design")}</span><span class="tr-state">${it.status === "done" ? "✓ done" : it.status === "skipped" ? "skipped" : it.candidates.length + " to check"}</span></div>
       <div class="tr-top"><b style="font-size:12px;padding:0 0 6px">${esc(it.ref_sku)}</b></div></div>`; }).join("")
     : `<div class="pm-empty">No designs today. The catalogue feed hasn't been built yet.</div>`;
@@ -3663,7 +3663,7 @@ function openGame(ref){
 function gmCard(c){
   const p = byId.get(c.sku) || {}, st = GAME.marks[c.sku];
   return `<div class="tj-card" data-sku="${esc(c.sku)}">
-    <img src="${esc(p.i || c.image)}" alt="" onclick="openViewer('${esc(c.image)}','${esc(c.sku)}')" onerror="this.src='${esc(c.thumb)}'">
+    <img src="${esc(p.i || c.image)}" alt="" onclick="openViewer('${esc(c.image)}','${esc(c.sku)}')" onerror="if(this.src.indexOf('${esc(c.thumb)}')<0){this.src='${esc(c.thumb)}'}else{imgFail(this)}">
     <div class="tj-card-i"><b>${esc(c.sku)}</b><span>${esc(p.c||"")}${widthOf(p) ? " · " + widthOf(p) : ""}</span><span class="tj-tag">${esc(p.p||"")}</span></div>
     <div class="fbrow tj-fb"><button class="fb ${st===true?"on":""}" onclick="gmMark('${esc(c.sku)}',true)">✓</button><button class="fb no ${st===false?"on":""}" onclick="gmMark('${esc(c.sku)}',false)">✗</button></div></div>`;
 }

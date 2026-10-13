@@ -1729,6 +1729,39 @@
     .topn{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:2px 0 12px;padding-bottom:2px} .topn::-webkit-scrollbar{display:none} .topn button{flex:0 0 auto}
     body.has-sel #browseGrid, body.has-sel #vsGrid{padding-bottom:80px}
   }
+
+  /* ===== v9.12: Themes ===== */
+  .themes-wrap{padding-top:6px;padding-bottom:40px}
+  .th-jump{display:flex;gap:8px;overflow-x:auto;padding:12px 0 8px;position:sticky;top:var(--topbar-h,72px);z-index:6;background:var(--paper);scrollbar-width:none}
+  .th-jump::-webkit-scrollbar{display:none}
+  .th-jump a{flex:0 0 auto;border:1.5px solid var(--sand-200);background:var(--card,#fff);border-radius:999px;padding:8px 14px;font-weight:800;font-size:13px;color:var(--ink);text-decoration:none}
+  .th-jump a:hover{border-color:var(--ink)}
+  .th-row{padding:20px 0 6px;border-bottom:1px solid var(--sand-200)}
+  .th-head{display:flex;align-items:baseline;gap:12px;margin-bottom:12px}
+  .th-head h3{font-family:var(--font-display);font-size:32px;font-weight:600;margin:0;line-height:1.05}
+  .th-head span{color:var(--ink-soft);font-weight:600;font-size:14px}
+  .th-head a{margin-left:auto;font-weight:800;font-size:14px;color:var(--coral);text-decoration:none;white-space:nowrap}
+  .th-strip{display:flex;gap:12px;overflow-x:auto;scroll-snap-type:x proximity;padding:2px 2px 14px;scrollbar-width:thin;-webkit-overflow-scrolling:touch}
+  .th-tile{flex:0 0 172px;scroll-snap-align:start;background:var(--card,#fff);border:1px solid var(--sand-200);border-radius:16px;overflow:hidden;cursor:pointer;padding:0;text-align:left;font-family:inherit;color:var(--ink);transition:transform .15s}
+  .th-tile:hover{transform:translateY(-3px)}
+  .th-tile img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--sand-100)}
+  .th-tile .m{display:block;padding:8px 10px 10px;font-size:12px;color:var(--ink-soft);line-height:1.35}
+  .th-tile .m b{display:block;color:var(--ink);font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .th-tile .st{display:inline-block;margin-top:5px;font-style:normal;font-size:11px;font-weight:800;border-radius:999px;padding:2px 8px;background:#E3F6F4;color:#0B6E6B}
+  .th-tile .st.low{background:#FFF1C2;color:#5A3D00} .th-tile .st.out{background:#FDE2DC;color:#8A2A16}
+  .th-more{flex:0 0 172px;scroll-snap-align:start;border:0;border-radius:16px;background:var(--ink);color:#fff;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;font-weight:800;font-size:16px;text-align:center;padding:16px;cursor:pointer;font-family:inherit}
+  .th-more small{font-weight:600;font-size:12px;color:#C9CDD6}
+  .th-small{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px;padding-bottom:14px}
+  .th-small button{display:flex;align-items:center;gap:10px;background:var(--card,#fff);border:1px solid var(--sand-200);border-radius:14px;padding:8px;cursor:pointer;text-align:left;font-family:inherit;color:var(--ink)}
+  .th-small img{width:44px;height:44px;border-radius:10px;object-fit:cover;flex:none}
+  .th-small b{display:block;font-size:14px} .th-small span{display:block;font-size:12px;color:var(--ink-soft)}
+  html[data-theme="dark"] .th-more{background:#fff;color:#121418} html[data-theme="dark"] .th-more small{color:#5F6673}
+  @media(max-width:700px){
+    .th-head h3{font-size:24px} .th-head a{font-size:12.5px}
+    .th-tile,.th-more{flex-basis:124px} .th-tile .m{font-size:11px;padding:6px 8px 8px} .th-tile .m b{font-size:12.5px}
+    .th-jump{top:var(--topbar-h,112px)} .th-jump a{padding:7px 12px;font-size:12.5px}
+    .th-small{grid-template-columns:1fr 1fr}
+  }
 </style>
 </head>
 <body>
@@ -1744,7 +1777,7 @@
     <nav class="frame-tabs" id="tabs"><span class="tab-ind" id="tabInd"></span>
       <button data-frame="home" class="active">Home</button>
       <button data-frame="browse">Browse</button>
-      <button data-frame="collections">Collections</button>
+      <button data-frame="collections">Themes</button>
       <button data-frame="visual">Visual Search</button>
       <button data-frame="training" id="navUser">Training</button>
     </nav>
@@ -1886,21 +1919,22 @@
 
 <!-- ============ FRAME 3 : COLLECTIONS ============ -->
 <section class="frame" id="frame-collections">
-  <div class="wrap coll-hero">
+  <div class="wrap themes-wrap" id="themesWrap"></div>
+  <div class="wrap coll-hero" style="display:none">
     <h2>Featured Collections</h2>
     <p>The biggest live collections in the WCD catalogue right now. Click any collection to browse it with the filter pre-applied.</p>
   </div>
-  <div class="carousel-shell wrap" style="position:relative">
+  <div class="carousel-shell wrap" style="position:relative;display:none">
     <button class="car-arrow prev" onclick="slideCarousel(-1)" aria-label="Previous collections">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m15 18-6-6 6-6"/></svg>
     </button>
-    <div class="carousel" id="carousel"><!-- js --></div>
+    <div class="carousel" id="carousel" style="display:none"><!-- js --></div>
     <button class="car-arrow next" onclick="slideCarousel(1)" aria-label="Next collections">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m9 18 6-6-6-6"/></svg>
     </button>
   </div>
-  <div class="car-dots" id="carDots"></div>
-  <div class="coll-strip">
+  <div class="car-dots" id="carDots" style="display:none"></div>
+  <div class="coll-strip" style="display:none">
     <div class="wrap">
       <div>
         <h3 class="serif">Trade programme for ID firms &amp; contractors</h3>
@@ -2128,7 +2162,7 @@ const LAYOUT = (() => {
       const tiles = section("vv-tiles", `<div class="tiles">
         <button class="etile browse" onclick="go('browse')"><i>${ICON.browse}</i><b data-i18n="tile.browse">${I18N.t("tile.browse")}</b><span>${PRODUCTS.length.toLocaleString()} <span data-i18n="unit.designs">${I18N.t("unit.designs")}</span></span></button>
         <button class="etile colour" onclick="go('browse')"><i>${ICON.colour}</i><b data-i18n="tile.colour">${I18N.t("tile.colour")}</b><span>25 <span data-i18n="unit.colours">${I18N.t("unit.colours")}</span></span></button>
-        <button class="etile colls" onclick="go('collections')"><i>${ICON.colls}</i><b data-i18n="tile.colls">${I18N.t("tile.colls")}</b><span>${new Set(PRODUCTS.map(p => p.c).filter(Boolean)).size} <span data-i18n="unit.collections">${I18N.t("unit.collections")}</span></span></button>
+        <button class="etile colls" onclick="go('collections')"><i>${ICON.colls}</i><b data-i18n="tile.colls">${I18N.t("tile.colls")}</b><span>${new Set(PRODUCTS.map(p => p.p).filter(Boolean)).size} themes</span></button>
         <button class="etile photo" onclick="go('visual')"><i>${ICON.photo}</i><b data-i18n="tile.photo">${I18N.t("tile.photo")}</b><span data-i18n="tile.photo.sub">${I18N.t("tile.photo.sub")}</span></button>
       </div>`);
       home().insertBefore(tiles, fresh());
@@ -2181,42 +2215,42 @@ const ICON = {
 const I18N = (() => {
   const S = {
     en: {"brand.name": "WCD Vision", "brand.word": "Vision",
-      "nav.home": "Home", "nav.browse": "Browse", "nav.collections": "Collections", "nav.visual": "Visual Search", "nav.training": "Training", "nav.moodboards": "Moodboards",
+      "nav.home": "Home", "nav.browse": "Browse", "nav.collections": "Themes", "nav.visual": "Visual Search", "nav.training": "Training", "nav.moodboards": "Moodboards",
       "hero.eyebrow": "Wallcoverings · Fabrics · Vinyl · Stickers", "hero.title": "Find the perfect surface, <em>visually.</em>", "hero.sub": "Search the entire WCD catalogue the way designers think: by look, colour and mood, not by SKU code.",
       "hero.placeholder": "Type what you need, e.g. red wallpaper 400 square feet", "hero.search": "Search", "hero.popular": "Popular:", "hero.photo": "Search by photo", "hero.cta": "Browse the catalogue", "hero.reset": "Reset", "hero.guide": "Guide me in three steps",
-      "tile.browse": "Browse by pattern", "tile.colour": "Browse by colour", "tile.colls": "Collections", "tile.photo": "Search by photo", "tile.photo.sub": "Upload or snap a reference", "unit.designs": "designs", "unit.colours": "colour families", "unit.collections": "collections", "unit.instock": "in stock",
+      "tile.browse": "Browse by pattern", "tile.colour": "Browse by colour", "tile.colls": "Browse by theme", "tile.photo": "Search by photo", "tile.photo.sub": "Upload or snap a reference", "unit.designs": "designs", "unit.colours": "colour families", "unit.collections": "collections", "unit.instock": "in stock",
       "home.collections.eyebrow": "Collections", "home.collections.title": "The biggest live collections", "home.collections.all": "All collections",
       "home.designs.eyebrow": "Selected designs", "home.designs.title": "From the catalogue this week", "home.designs.sub": "Hover any swatch to enlarge it, see its tags, tick to select, or add it to a moodboard.", "home.designs.all": "Browse all designs",
       "page.browse.title": "Catalogue", "page.browse.sub": "Every live design, filtered by pattern, colour, type, width and stock",
-      "page.collections.title": "Collections", "page.collections.sub": "The biggest live collections in the WCD catalogue",
+      "page.collections.title": "Browse by theme", "page.collections.sub": "Every design grouped by its look. Swipe through a theme, or open it to filter, select and share.",
       "page.visual.title": "Search by photo", "page.visual.sub": "The same design engine that answers on WhatsApp, on the full catalogue",
       "page.training.title": "Training", "page.training.sub": "Ten designs a day, customer photos as they come in, a leaderboard",
       "foot.blurb": "Wallcoverings, fabrics, films and vinyl for interior designers, dealers and project teams across Malaysia.", "foot.catalogue": "Catalogue", "foot.team": "Team", "foot.data": "Data", "foot.updated": "Catalogue and stock updated", "foot.sample": "Screen colours are a guide. Confirm with a physical sample.",
       "browse.title": "Catalogue", "browse.instock": "In stock only", "browse.clear": "Clear all",
       "vs.what": "What matters", "vs.both": "Design + Colour", "vs.design": "Design", "vs.colour": "Colour", "vs.width": "Roll width", "vs.any": "Any", "vs.need": "Need", "vs.drop": "Drop an image here, click to upload, or paste (Ctrl+V)"},
     ms: {"brand.name": "WCD Vision", "brand.word": "Vision",
-      "nav.home": "Utama", "nav.browse": "Katalog", "nav.collections": "Koleksi", "nav.visual": "Carian Visual", "nav.training": "Latihan", "nav.moodboards": "Papan Idea",
+      "nav.home": "Utama", "nav.browse": "Katalog", "nav.collections": "Tema", "nav.visual": "Carian Visual", "nav.training": "Latihan", "nav.moodboards": "Papan Idea",
       "hero.eyebrow": "Kertas dinding · Fabrik · Vinil · Pelekat", "hero.title": "Cari permukaan yang sempurna, <em>secara visual.</em>", "hero.sub": "Cari seluruh katalog WCD seperti pereka berfikir: ikut rupa, warna dan suasana, bukan kod SKU.",
       "hero.placeholder": "Taip apa yang anda perlukan, cth. kertas dinding merah 400 kaki persegi", "hero.search": "Cari", "hero.popular": "Popular:", "hero.photo": "Cari ikut gambar", "hero.cta": "Lihat katalog", "hero.reset": "Padam", "hero.guide": "Bimbing saya dalam tiga langkah",
       "tile.browse": "Ikut corak", "tile.colour": "Ikut warna", "tile.colls": "Koleksi", "tile.photo": "Cari ikut gambar", "tile.photo.sub": "Muat naik atau ambil gambar rujukan", "unit.designs": "reka bentuk", "unit.colours": "keluarga warna", "unit.collections": "koleksi", "unit.instock": "ada stok",
       "home.collections.eyebrow": "Koleksi", "home.collections.title": "Koleksi terbesar yang ada", "home.collections.all": "Semua koleksi",
       "home.designs.eyebrow": "Reka bentuk pilihan", "home.designs.title": "Dari katalog minggu ini", "home.designs.sub": "Lalukan tetikus untuk besarkan, lihat tag, tanda untuk pilih, atau tambah ke papan idea.", "home.designs.all": "Lihat semua reka bentuk",
       "page.browse.title": "Katalog", "page.browse.sub": "Setiap reka bentuk yang ada, ditapis ikut corak, warna, jenis, lebar dan stok",
-      "page.collections.title": "Koleksi", "page.collections.sub": "Koleksi terbesar dalam katalog WCD",
+      "page.collections.title": "Lihat ikut tema", "page.collections.sub": "Setiap reka bentuk dikumpulkan ikut rupanya. Leret untuk melihat, atau buka tema untuk menapis, memilih dan berkongsi.",
       "page.visual.title": "Cari ikut gambar", "page.visual.sub": "Enjin reka bentuk yang sama di WhatsApp, untuk seluruh katalog",
       "page.training.title": "Latihan", "page.training.sub": "Sepuluh reka bentuk sehari, gambar pelanggan, papan markah",
       "foot.blurb": "Kertas dinding, fabrik, filem dan vinil untuk pereka dalaman, pengedar dan pasukan projek di seluruh Malaysia.", "foot.catalogue": "Katalog", "foot.team": "Pasukan", "foot.data": "Data", "foot.updated": "Katalog dan stok dikemas kini", "foot.sample": "Warna skrin hanya panduan. Sahkan dengan sampel fizikal.",
       "browse.title": "Katalog", "browse.instock": "Ada stok sahaja", "browse.clear": "Kosongkan",
       "vs.what": "Apa yang penting", "vs.both": "Reka bentuk + Warna", "vs.design": "Reka bentuk", "vs.colour": "Warna", "vs.width": "Lebar gulung", "vs.any": "Semua", "vs.need": "Perlu", "vs.drop": "Letak gambar di sini, klik untuk muat naik, atau tampal (Ctrl+V)"},
     zh: {"brand.name": "WCD Vision", "brand.word": "Vision",
-      "nav.home": "首页", "nav.browse": "浏览", "nav.collections": "系列", "nav.visual": "以图搜图", "nav.training": "培训", "nav.moodboards": "灵感板",
+      "nav.home": "首页", "nav.browse": "浏览", "nav.collections": "主题", "nav.visual": "以图搜图", "nav.training": "培训", "nav.moodboards": "灵感板",
       "hero.eyebrow": "墙纸 · 布料 · 乙烯基 · 贴膜", "hero.title": "用眼睛，找到<em>理想的墙面。</em>", "hero.sub": "像设计师一样搜索 WCD 全部目录：凭外观、颜色和氛围，而不是货号。",
       "hero.placeholder": "输入您的需求，例如：红色墙纸 400 平方英尺", "hero.search": "搜索", "hero.popular": "热门：", "hero.photo": "以图搜图", "hero.cta": "浏览目录", "hero.reset": "清除", "hero.guide": "三步引导",
       "tile.browse": "按图案浏览", "tile.colour": "按颜色浏览", "tile.colls": "系列", "tile.photo": "以图搜图", "tile.photo.sub": "上传或拍摄参考图", "unit.designs": "款", "unit.colours": "个色系", "unit.collections": "个系列", "unit.instock": "有货",
       "home.collections.eyebrow": "系列", "home.collections.title": "在售的最大系列", "home.collections.all": "全部系列",
       "home.designs.eyebrow": "精选", "home.designs.title": "本周目录精选", "home.designs.sub": "悬停放大、查看标签、勾选或加入灵感板。", "home.designs.all": "浏览全部",
       "page.browse.title": "目录", "page.browse.sub": "按图案、颜色、类型、幅宽和库存筛选每一款在售产品",
-      "page.collections.title": "系列", "page.collections.sub": "WCD 目录中最大的在售系列",
+      "page.collections.title": "按主题浏览", "page.collections.sub": "按外观归类的全部设计。左右滑动查看，或打开主题进行筛选、挑选和分享。",
       "page.visual.title": "以图搜图", "page.visual.sub": "与 WhatsApp 相同的识别引擎，覆盖全部目录",
       "page.training.title": "培训", "page.training.sub": "每天十款设计、客户照片、排行榜",
       "foot.blurb": "面向马来西亚室内设计师、经销商与项目团队的墙纸、布料、贴膜与乙烯基。", "foot.catalogue": "目录", "foot.team": "团队", "foot.data": "数据", "foot.updated": "目录与库存更新于", "foot.sample": "屏幕颜色仅供参考，请以实物样本为准。",
@@ -2516,6 +2550,7 @@ function cardHTML(p, simPct, simCls, extra){
 /* ================= NAV / FRAMES ================= */
 function go(frame){
   document.body.dataset.frame = frame;
+  if(frame === "collections"){ try{ THEMES.ensure(); }catch(e){ console.error(e); } }
   document.querySelectorAll(".frame").forEach(f=>f.classList.remove("active"));
   const el = document.getElementById("frame-"+frame); el.classList.add("active");
   document.querySelectorAll("#tabs button").forEach(b=>b.classList.toggle("active",b.dataset.frame===frame));
@@ -2951,6 +2986,56 @@ const GUIDE = (() => {
     S.colours.forEach(c => state.colours.add(c)); if(S.pattern) state.patterns.add(S.pattern); state.inStock = true; state.need = S.qty ? {qty: S.qty, unit: S.unit} : null; state.query = "";
     syncFilterInputs(); go("browse"); applyFilters(); toast("Here are the designs for your three answers. Change any filter on the left."); };
   return {open, close, step, col, pat, type, unit, qty, finish};
+})();
+
+
+/* ================= THEMES (v9.12) =================
+   Themes are the design patterns on every product (earlier tagger + engine + staff corrections). They are read from
+   the live product list, so a pattern fixed by staff (Pattern review, the ✎ on a card, Tag Review in the sheet) moves
+   the design to its new theme: at once on this device, and for everyone after the nightly feed. */
+const THEMES = (() => {
+  let built = false;
+  const MIN = 10, PER = 12;
+  const family = sku => String(sku || "").replace(/[-\/]\s*[A-Za-z0-9]{1,4}$/, "").trim();
+  function groups(){
+    const m = new Map();
+    PRODUCTS.forEach(p => { if(p.p) { if(!m.has(p.p)) m.set(p.p, []); m.get(p.p).push(p); } });
+    return [...m.entries()].map(([name, list]) => ({name, list}));
+  }
+  function pick(list){            // in stock first, one design per family before any second colourway
+    const inst = list.filter(p => (p.n || 0) > 0 && p.i), rest = list.filter(p => !((p.n || 0) > 0) && p.i);
+    const out = [], seen = new Set();
+    for(const pool of [inst, rest]) for(const p of pool){ if(out.length >= PER) break; const f = family(p.sku); if(seen.has(f)) continue; seen.add(f); out.push(p); }
+    for(const pool of [inst, rest]) for(const p of pool){ if(out.length >= PER) break; if(!out.includes(p)) out.push(p); }
+    return out;
+  }
+  const tile = p => { const st = stockInfo(p), wd = widthOf(p);
+    return `<button class="th-tile" onclick="openProduct('${esc(p.sku).replace(/'/g, "\\'")}')"><img src="${esc(p.i)}" alt="${esc(p.sku)}" loading="lazy" onerror="imgFail(this)"><span class="m"><b>${esc(p.sku)}</b>${esc(p.t || "")}${wd ? " · " + esc(wd) : ""}<em class="st ${st.cls}">${esc(st.label)}</em></span></button>`; };
+  const slug = n => "th-" + String(n).toLowerCase().replace(/[^a-z0-9]+/g, "-");
+  function render(){
+    const box = document.getElementById("themesWrap"); if(!box || !PRODUCTS.length) return;
+    const all = groups();
+    const main = all.filter(g => g.list.length >= MIN && g.name !== "Plain").sort((a, b) => b.list.length - a.list.length);
+    const plain = all.filter(g => g.name === "Plain" && g.list.length >= MIN);
+    const small = all.filter(g => g.list.length < MIN).sort((a, b) => b.list.length - a.list.length);
+    const rows = [...main, ...plain];
+    const q = n => `'${esc(n).replace(/'/g, "\\'")}'`;
+    box.innerHTML =
+      `<div class="th-jump">${rows.map(g => `<a href="#" onclick="THEMES.jump(${q(g.name)});return false;">${esc(g.name)}</a>`).join("")}${small.length ? `<a href="#" onclick="THEMES.jump('__more');return false;">More themes</a>` : ""}</div>` +
+      rows.map(g => `<section class="th-row" id="${slug(g.name)}"><div class="th-head"><h3>${esc(g.name)}</h3><span>${g.list.length.toLocaleString()} designs</span><a href="#" onclick="THEMES.open(${q(g.name)});return false;">See all →</a></div>
+        <div class="th-strip">${pick(g.list).map(tile).join("")}<button class="th-more" onclick="THEMES.open(${q(g.name)})">See all ${g.list.length.toLocaleString()}<small>${esc(g.name)} in Browse</small></button></div></section>`).join("") +
+      (small.length ? `<section class="th-row" id="th-__more"><div class="th-head"><h3>More themes</h3><span>${small.length} smaller themes</span></div><div class="th-small">${small.map(g => { const s0 = pick(g.list)[0];
+        return `<button onclick="THEMES.open(${q(g.name)})">${s0 ? `<img src="${esc(s0.i)}" alt="" loading="lazy" onerror="this.remove()">` : ""}<b>${esc(g.name)}</b><span>${g.list.length} design${g.list.length === 1 ? "" : "s"}</span></button>`; }).join("")}</div></section>` : "");
+    built = true;
+  }
+  function open(name){            // Browse filtered to the theme, across all product types, so the count matches
+    clearFilters(true); state.types.clear(); state.patterns.add(name);
+    document.querySelectorAll("#typeFilters input, #typeFiltersTop input").forEach(i => i.checked = false);
+    document.querySelectorAll("#patternFilters input, #patternFiltersTop input").forEach(i => i.checked = state.patterns.has(i.value));
+    go("browse"); applyFilters();
+  }
+  function jump(name){ const el = document.getElementById(name === "__more" ? "th-__more" : slug(name)); if(el){ const y = el.getBoundingClientRect().top + window.scrollY - 140; window.scrollTo({top: y, behavior: "smooth"}); } }
+  return {render, open, jump, dirty(){ built = false; }, ensure(){ if(!built) render(); }};
 })();
 
 /* ================= FRAME 2 : FILTERS ================= */
@@ -3790,7 +3875,7 @@ function tagFixOpen(sku, btn){
 async function tagFixSave(sku, pattern){
   const p = byId.get(sku) || {};
   try{ await staffFetch("/training/tagdecide", {method:"POST", body: JSON.stringify({sku, decision: pattern, his: p.p || "", engine: p.pe || ""})});
-    p.p = pattern; p.ts = "S";
+    p.p = pattern; p.ts = "S"; try{ THEMES.dirty(); }catch(e){}
     document.querySelectorAll(`.pchip[data-sku="${CSS.escape(sku)}"]`).forEach(c => { c.textContent = pattern; c.classList.remove("staff-only"); });
     document.querySelectorAll(".tag-pop").forEach(e => e.remove());
     toast(`${sku} → ${pattern}. On the website tonight.`);

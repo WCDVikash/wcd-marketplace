@@ -42,7 +42,7 @@
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"Wallpaper & Carpets Distributors (M) Sdn Bhd","alternateName":"WCD","url":"https://wcdvision.com/","address":{"@type":"PostalAddress","streetAddress":"Lot 1509, Batu 8, Jalan Klang Lama","addressLocality":"Petaling Jaya","postalCode":"46150","addressRegion":"Selangor","addressCountry":"MY"},"telephone":"+603-7875 5555"}</script>
 <style>
   /* ============================================================
-     WCD WCD Vision, design system v2 (2026-07-18)
+     WCD Vision, design system v2 (2026-07-18)
      Exaggerated-minimalism direction: oversized editorial type,
      generous whitespace, hairline borders, layered soft shadows.
      Brand: Emerald + Sand. System fonts only (offline demos).
@@ -1708,6 +1708,27 @@
   #vsGrid .pcard .selbox{opacity:1;width:34px;height:34px;border-width:2px;border-color:var(--ink);background:rgba(255,255,255,.95)} #vsGrid .pcard.sel .selbox{background:var(--coral);border-color:var(--coral)}
   .selbar b{font-size:15px} .selbar button{min-height:40px;font-size:13.5px;font-weight:800}
   body.dragging #frame-visual .dropzone{outline:4px dashed var(--coral);outline-offset:6px}
+
+  /* ===== v9.11: select top N, PDF to WhatsApp, slim mobile bar ===== */
+  .topn{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin:4px 0 14px}
+  .topn b{font-size:13px;color:var(--ink-soft);margin-right:2px}
+  .topn button{border:1.5px solid var(--ink);background:var(--card,#fff);color:var(--ink);border-radius:999px;padding:7px 13px;font-weight:800;font-size:13px;min-height:36px;cursor:pointer;font-family:inherit}
+  .topn button.on{background:var(--ink);color:#fff} .topn button.ghost{border-color:var(--sand-300);color:var(--ink-soft)}
+  html[data-theme="dark"] .topn button{background:transparent;color:#E8EAED;border-color:#5A606B} html[data-theme="dark"] .topn button.on{background:#fff;color:#121418;border-color:#fff}
+  body.has-sel .toast.show{transform:translate(-50%,-78px)}   /* the toast sits above the selection bar, never on it */
+  .selbar .sel-note{font-size:11px;color:#AEB4BF;white-space:nowrap} .selbar .sel-note:empty{display:none}
+  .selbar .sb-wa{background:#25D366!important;border-color:#25D366!important;color:#fff!important}
+  .selbar button.busy{opacity:.6;pointer-events:none} .selbar button.busy svg{animation:sbspin 1s linear infinite} @keyframes sbspin{to{transform:rotate(360deg)}}
+  @media(hover:none),(max-width:700px){ .pcard .selbox{opacity:1;width:32px;height:32px;border:2px solid var(--ink);background:rgba(255,255,255,.92)} .pcard.sel .selbox{border-color:var(--coral)} }
+  @media(max-width:700px){
+    .selbar{left:12px;right:12px;transform:translateY(calc(100% + 40px));max-width:none;flex-wrap:nowrap;justify-content:flex-start;gap:6px;padding:6px 6px 6px 14px;border-radius:18px;min-height:56px;bottom:max(12px,env(safe-area-inset-bottom))}
+    .selbar.show{transform:translateY(0)}
+    .selbar b{margin-right:auto;padding:0;font-size:14.5px} .selbar .sel-note{display:none}
+    .selbar button{width:44px;height:44px;min-height:44px;padding:0;justify-content:center;border-radius:12px;gap:0}
+    .selbar button span{display:none}
+    .topn{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;margin:2px 0 12px;padding-bottom:2px} .topn::-webkit-scrollbar{display:none} .topn button{flex:0 0 auto}
+    body.has-sel #browseGrid, body.has-sel #vsGrid{padding-bottom:80px}
+  }
 </style>
 </head>
 <body>
@@ -1852,6 +1873,7 @@
         <button class="tf-clear" onclick="clearFilters()">Clear all</button>
       </div>
       <div class="active-chips" id="activeChips"></div>
+      <div class="topn" id="topnBrowse"></div>
       <div class="pgrid" id="browseGrid"></div>
       <button class="load-more" id="loadMore" style="display:none" onclick="loadMore()">Load more designs</button>
       <div class="empty-state" id="emptyState" style="display:none">
@@ -1968,6 +1990,7 @@
         <button class="tf-clear" onclick="vsClearFilters()">Clear all</button>
       </div>
       <div id="vsFeedback"></div>
+      <div class="topn" id="topnVisual"></div>
       <div class="pgrid" id="vsGrid"></div>
       <div class="vs-actions" id="vsActions" style="display:none">
         <button class="tr-btn" onclick="vsMore()">More options</button>
@@ -1995,7 +2018,7 @@
 <footer>
   <div class="wrap">
     <div><b>WCD</b> · Wallcoverings, fabrics &amp; interior surfaces · Malaysia</div>
-    <div>WCD WCD Vision · live catalogue data · <span id="footerUpdated"></span> · <a href="#" onclick="go('training');return false;">Staff</a></div>
+    <div>WCD Vision · live catalogue data · <span id="footerUpdated"></span> · <a href="#" onclick="go('training');return false;">Staff</a></div>
   </div>
 </footer>
 
@@ -2033,11 +2056,11 @@
 
 <!-- selection action bar (browse) -->
 <div class="selbar" id="selbar">
-  <b id="selCount"></b>
-  <button onclick="selToBoard()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg>Moodboard</button>
-  <button onclick="selExport()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/><path d="M12 15V3"/></svg>Export PDF</button>
-  <button onclick="selWhatsApp()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22z"/></svg>WhatsApp</button>
-  <button onclick="clearSelection()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg>Clear</button>
+  <b id="selCount"></b><small id="selNote" class="sel-note"></small>
+  <button onclick="selToBoard()" title="Add to moodboard" aria-label="Add to moodboard"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M17.5 14v7M14 17.5h7"/></svg><span>Moodboard</span></button>
+  <button class="sb-wa" id="selWA" onclick="selWhatsApp()" title="Send the PDF on WhatsApp" aria-label="Send the PDF on WhatsApp"><svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.2c-.2.6-1.3 1.2-1.8 1.2s-1 .3-3.4-.7a11.8 11.8 0 0 1-4.6-4.1 5.2 5.2 0 0 1-1.1-2.8 3 3 0 0 1 1-2.2 1 1 0 0 1 .7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.4 0 .5l-.4.6-.5.5c-.2.2-.3.4-.1.7a8.4 8.4 0 0 0 1.6 2 7.6 7.6 0 0 0 2.3 1.4c.3.1.5.1.7-.1l.9-1.1c.2-.3.4-.2.7-.1l1.9.9c.3.1.5.2.5.3a2.3 2.3 0 0 1-.1 1.2z"/></svg><span>WhatsApp PDF</span></button>
+  <button id="selPDF" onclick="selExport()" title="Download PDF" aria-label="Download PDF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 3v12M7 10l5 5 5-5"/><path d="M5 21h14"/></svg><span>Download PDF</span></button>
+  <button onclick="clearSelection()" title="Clear selection" aria-label="Clear selection"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M18 6 6 18M6 6l12 12"/></svg><span>Clear</span></button>
 </div>
 
 <!-- ============ PRODUCT PAGE (modal) ============ -->
@@ -2468,7 +2491,7 @@ function cardHTML(p, simPct, simCls, extra){
   const dots = (p.h || []).slice(0, 4).map(([hex, , name]) =>
     `<i style="background:${esc(hex)}"${name ? ` data-cn="${esc(name)}"` : ""}></i>`).join("");
   const pc = (p.h && p.h[0] && p.h[0][0]) ? p.h[0][0] : "";
-  return `<article class="pcard" data-sku="${esc(p.sku)}"${pc ? ` style="--pc:${esc(pc)}"` : ""}>
+  return `<article class="pcard${SELECTED.has(p.sku) ? " sel" : ""}" data-sku="${esc(p.sku)}"${pc ? ` style="--pc:${esc(pc)}"` : ""}>
     <div class="imgbox">
       <img class="main" src="${esc(p.i)}" alt="${esc(p.sku)}" loading="lazy" onerror="imgFail(this)">${altImg}${sim}
       <span class="selbox">✓</span>
@@ -2705,7 +2728,7 @@ function shareWA(title, skus){
     const st = stockInfo(p);
     return `${i+1}. ${p.sku}, ${p.t||""}${p.c?" · "+p.c:""}${p.z?" · "+p.z:""} · ${st.label}`;
   });
-  const text = `*WCD: ${title}*\n${lines.join("\n")}\n\n(${items.length} designs, sent from the WCD WCD Vision)`;
+  const text = `*WCD: ${title}*\n${lines.join("\n")}\n\n(${items.length} designs, sent from WCD Vision)`;
   window.open("https://wa.me/?text=" + encodeURIComponent(text), "_blank");
 }
 function shareBoardWA(id){ const b = boardById(id); shareWA("Moodboard: " + b.name, b.skus); }
@@ -2729,10 +2752,13 @@ function toggleCardSel(sku){
     .forEach(c => c.classList.toggle("sel", SELECTED.has(sku)));
   updateSelbar();
 }
+const PDF_MAX = 100;
 function updateSelbar(){
   document.getElementById("selCount").textContent = `${SELECTED.size} selected`;
+  const note = document.getElementById("selNote"); if(note) note.textContent = SELECTED.size > PDF_MAX ? `PDF takes the first ${PDF_MAX}` : "";
+  renderTopN();
   const sb = document.getElementById("selbar"), was = sb.classList.contains("show");
-  sb.classList.toggle("show", SELECTED.size > 0);
+  sb.classList.toggle("show", SELECTED.size > 0); document.body.classList.toggle("has-sel", SELECTED.size > 0);
   if(!was && SELECTED.size > 0) MOTION.bar(sb);
 }
 function clearSelection(){
@@ -2740,19 +2766,63 @@ function clearSelection(){
   document.querySelectorAll(".pcard.sel").forEach(c=>c.classList.remove("sel"));
   updateSelbar();
 }
+/* ---- v9.11: select the top N of what is on screen (Browse, a collection, Visual Search) ---- */
+function topnList(){ const f = document.body.dataset.frame; if(f === "visual") return (VS.list || []).map(x => x.p.sku); if(f === "browse") return (FILTERED || []).map(p => p.sku); return []; }
+function selectTop(n){
+  const list = topnList(); const take = list.slice(0, Math.min(n, PDF_MAX));
+  SELECTED.clear(); take.forEach(s => SELECTED.add(s));
+  document.querySelectorAll(".pcard").forEach(el => el.classList.toggle("sel", SELECTED.has(el.dataset.sku)));
+  updateSelbar();
+  toast(n >= list.length ? `All ${take.length} selected` + (list.length > PDF_MAX ? ` (first ${PDF_MAX}, the PDF limit)` : "") : `Top ${take.length} selected`);
+}
+function renderTopN(){
+  const f = document.body.dataset.frame; const box = document.getElementById(f === "visual" ? "topnVisual" : "topnBrowse"); if(!box) return;
+  const n = topnList().length;
+  if(!n){ box.innerHTML = ""; return; }
+  const opts = [20, 40, 60, 80, 100].filter(k => k < n);
+  const cur = SELECTED.size;
+  // up to 100 results: "Select all (n)" after the smaller tops; above 100: Top 20 ... Top 100 only (100 is the PDF limit)
+  const allBtn = n <= PDF_MAX ? `<button class="${cur && cur === n ? "on" : ""}" onclick="selectTop(${n})">Select all (${n})</button>` : "";
+  box.innerHTML = `<b>Select:</b>` + opts.map(k => `<button class="${cur === k ? "on" : ""}" onclick="selectTop(${k})">Top ${k}</button>`).join("") + allBtn +
+    (cur ? `<button class="ghost" onclick="clearSelection()">Clear</button>` : "");
+}
 function selToBoard(){ openChooser([...SELECTED]); }
 function selExport(){ downloadPDF("Product Selection", [...SELECTED]); }
+async function buildPDF(title, skus){
+  const r = await fetch(API + "/pdf", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({title, skus: skus.slice(0, PDF_MAX), session: SESSION})});
+  if(!r.ok) throw new Error(r.status);
+  return await r.blob();
+}
+function busy(id, on){ const b = document.getElementById(id); if(b){ b.classList.toggle("busy", on); b.disabled = on; } }
 async function downloadPDF(title, skus){
   if(!skus.length){ toast("Nothing to export"); return; }
-  toast("Preparing your PDF…");
+  toast(skus.length > 30 ? "Preparing your PDF, this takes a few seconds…" : "Preparing your PDF…"); busy("selPDF", true);
   try{
-    const r = await fetch(API + "/pdf", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({title, skus: skus.slice(0, 60), session: SESSION})});
-    if(!r.ok) throw new Error(r.status);
-    const blob = await r.blob(); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "WCD-designs.pdf"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    const blob = await buildPDF(title, skus); const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "WCD-designs.pdf"; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
     toast("PDF downloaded");
   }catch(e){ console.error(e); toast("Download failed, opening the print view instead"); exportPDF(title, skus); }
+  finally{ busy("selPDF", false); }
 }
-function selWhatsApp(){ shareWA("Product Selection", [...SELECTED]); }
+/* WhatsApp: the PDF goes through the phone's share sheet (Android and iPhone). Where a browser cannot share files
+   (most desktops), the PDF downloads and WhatsApp opens so it can be attached. */
+async function sharePDF(title, skus){
+  if(!skus.length){ toast("Nothing to send"); return; }
+  toast(skus.length > 30 ? "Preparing the PDF for WhatsApp, a few seconds…" : "Preparing the PDF for WhatsApp…"); busy("selWA", true);
+  try{
+    const blob = await buildPDF(title, skus);
+    const file = new File([blob], `WCD-designs-${skus.length}.pdf`, {type: "application/pdf"});
+    if(navigator.canShare && navigator.canShare({files: [file]})){
+      try{ await navigator.share({files: [file], title: "WCD Vision designs"}); toast("Choose WhatsApp, then the chat"); }
+      catch(err){ if(err && err.name !== "AbortError") throw err; }
+      return;
+    }
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 2000);
+    window.open("https://web.whatsapp.com/", "_blank");
+    toast("PDF downloaded. Attach it in the WhatsApp chat (📎).");
+  }catch(e){ console.error(e); toast("Could not prepare the PDF, please try again"); }
+  finally{ busy("selWA", false); }
+}
+function selWhatsApp(){ sharePDF("Product Selection", [...SELECTED]); }
 saveMB();
 let toastTimer;
 function toast(msg){
@@ -2982,6 +3052,7 @@ function applyFilters(){
       window.gsap.to(o, {v: n, duration: .6, ease: "power2.out", onUpdate(){ rc.textContent = `${Math.round(o.v).toLocaleString()} design${Math.round(o.v)===1?"":"s"}`; }}); }
     else rc.textContent = `${n.toLocaleString()} design${n===1?"":"s"}`; }
   document.getElementById("emptyState").style.display = FILTERED.length ? "none" : "block";
+  renderTopN();
 
   const chips = [];
   if(state.query) chips.push(`<span class="achip">“${esc(state.query)}” <button onclick="removeQuery()">×</button></span>`);
@@ -3382,6 +3453,7 @@ function applyResult(j, more){
     document.getElementById("qTags").insertAdjacentHTML("beforeend", names.map(n=>`<span class="chip sand">${esc(n)}</span>`).join(""));
   }).catch(()=>{});
   renderVS();
+  try{ renderTopN(); }catch(e){}
 }
 
 /* ---- result filters (client side, on the returned list) ---- */

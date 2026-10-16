@@ -1888,7 +1888,7 @@
       </div>
       <div class="fgroup">
         <h4>Availability</h4>
-        <label class="fopt"><input type="checkbox" id="inStockOnly" data-instock onchange="toggleInStock(this)"> In stock only</label>
+        <label class="fopt"><input type="checkbox" id="inStockOnly" data-instock onchange="toggleInStock(this)"> Show not in stock</label>
       </div>
       <button class="clear-filters" onclick="clearFilters()">Clear all filters</button>
     </aside>
@@ -1924,7 +1924,7 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
           <div class="fdrop-panel" id="typeFiltersTop"></div>
         </div>
-        <label class="instock-chip"><input type="checkbox" data-instock onchange="toggleInStock(this)"> In stock only</label>
+        <label class="instock-chip"><input type="checkbox" data-instock onchange="toggleInStock(this)"> Show not in stock</label>
         <button class="tf-clear" onclick="clearFilters()">Clear all</button>
       </div>
       <div class="active-chips" id="activeChips"></div>
@@ -2042,7 +2042,7 @@
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="m6 9 6 6 6-6"/></svg></button>
           <div class="fdrop-panel" id="vsTypeFilters"></div>
         </div>
-        <label class="instock-chip"><input type="checkbox" id="vsInStock" onchange="vsToggleInStock(this)"> In stock only</label>
+        <label class="instock-chip"><input type="checkbox" id="vsInStock" onchange="vsToggleInStock(this)"> Show not in stock</label>
         <button class="tf-clear" onclick="vsClearFilters()">Clear all</button>
       </div>
       <div id="vsFeedback"></div>
@@ -2249,7 +2249,7 @@ const I18N = (() => {
       "page.visual.title": "Search by photo", "page.visual.sub": "The same design engine that answers on WhatsApp, on the full catalogue",
       "page.training.title": "Training", "page.training.sub": "Ten designs a day, customer photos as they come in, a leaderboard",
       "foot.blurb": "Wallcoverings, fabrics, films and vinyl for interior designers, dealers and project teams across Malaysia.", "foot.catalogue": "Catalogue", "foot.team": "Team", "foot.data": "Data", "foot.updated": "Catalogue and stock updated", "foot.sample": "Screen colours are a guide. Confirm with a physical sample.",
-      "browse.title": "Catalogue", "browse.instock": "In stock only", "browse.clear": "Clear all",
+      "browse.title": "Catalogue", "browse.instock": "Show not in stock", "browse.clear": "Clear all",
       "vs.what": "What matters", "vs.both": "Design + Colour", "vs.design": "Design", "vs.colour": "Colour", "vs.width": "Roll width", "vs.any": "Any", "vs.need": "Need", "vs.drop": "Drop an image here, click to upload, or paste (Ctrl+V)"},
     ms: {"brand.name": "WCD Vision", "brand.word": "Vision",
       "nav.home": "Utama", "nav.browse": "Katalog", "nav.collections": "Tema", "nav.visual": "Carian Visual", "nav.training": "Latihan", "nav.moodboards": "Papan Idea",
@@ -2263,7 +2263,7 @@ const I18N = (() => {
       "page.visual.title": "Cari ikut gambar", "page.visual.sub": "Enjin reka bentuk yang sama di WhatsApp, untuk seluruh katalog",
       "page.training.title": "Latihan", "page.training.sub": "Sepuluh reka bentuk sehari, gambar pelanggan, papan markah",
       "foot.blurb": "Kertas dinding, fabrik, filem dan vinil untuk pereka dalaman, pengedar dan pasukan projek di seluruh Malaysia.", "foot.catalogue": "Katalog", "foot.team": "Pasukan", "foot.data": "Data", "foot.updated": "Katalog dan stok dikemas kini", "foot.sample": "Warna skrin hanya panduan. Sahkan dengan sampel fizikal.",
-      "browse.title": "Katalog", "browse.instock": "Ada stok sahaja", "browse.clear": "Kosongkan",
+      "browse.title": "Katalog", "browse.instock": "Tunjuk yang tiada stok", "browse.clear": "Kosongkan",
       "vs.what": "Apa yang penting", "vs.both": "Reka bentuk + Warna", "vs.design": "Reka bentuk", "vs.colour": "Warna", "vs.width": "Lebar gulung", "vs.any": "Semua", "vs.need": "Perlu", "vs.drop": "Letak gambar di sini, klik untuk muat naik, atau tampal (Ctrl+V)"},
     zh: {"brand.name": "WCD Vision", "brand.word": "Vision",
       "nav.home": "首页", "nav.browse": "浏览", "nav.collections": "主题", "nav.visual": "以图搜图", "nav.training": "培训", "nav.moodboards": "灵感板",
@@ -2277,7 +2277,7 @@ const I18N = (() => {
       "page.visual.title": "以图搜图", "page.visual.sub": "与 WhatsApp 相同的识别引擎，覆盖全部目录",
       "page.training.title": "培训", "page.training.sub": "每天十款设计、客户照片、排行榜",
       "foot.blurb": "面向马来西亚室内设计师、经销商与项目团队的墙纸、布料、贴膜与乙烯基。", "foot.catalogue": "目录", "foot.team": "团队", "foot.data": "数据", "foot.updated": "目录与库存更新于", "foot.sample": "屏幕颜色仅供参考，请以实物样本为准。",
-      "browse.title": "目录", "browse.instock": "仅看有货", "browse.clear": "清除",
+      "browse.title": "目录", "browse.instock": "显示无库存", "browse.clear": "清除",
       "vs.what": "看重什么", "vs.both": "图案 + 颜色", "vs.design": "图案", "vs.colour": "颜色", "vs.width": "幅宽", "vs.any": "不限", "vs.need": "需要", "vs.drop": "把图片拖到这里、点击上传，或直接粘贴 (Ctrl+V)"}
   };
   let lang = "en";
@@ -2557,8 +2557,12 @@ function init(data){
 function imgFail(el){ el.onerror = null; el.src = IMG_FALLBACK; }
 
 /* ================= HELPERS ================= */
+/* What counts as "in stock" everywhere on the site (default view, themes, similar designs, PDF):
+   a positive quantity, or "Enquire to Reconfirm" in the catalogue. Only zero / no stock is hidden. */
+function inStockItem(p){ return !!p && ((p.n || 0) > 0 || p.q === "enquire"); }
 function stockInfo(p){
   const n = p.n, u = p.u || "";
+  if(p.q === "enquire") return {label:"Enquire to Reconfirm", cls:"low"};
   if(n <= 0) return {label:"No Stock", cls:"out"};
   if(n < 5)  return {label:"Enquire to Reconfirm", cls:"low"};
   if(n < 20) return {label:`Under 20 ${u}`.trim(), cls:"low"};
@@ -2883,7 +2887,7 @@ function renderTopN(){
 function selToBoard(){ openChooser([...SELECTED]); }
 function selExport(){ downloadPDF("Product Selection", [...SELECTED]); }
 async function buildPDF(title, skus){
-  const r = await fetch(API + "/pdf", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({title, skus: skus.slice(0, PDF_MAX), session: SESSION})});
+  const r = await fetch(API + "/pdf", {method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({title, skus: skus.slice(0, PDF_MAX), session: SESSION, brand: "dealer", include_out_of_stock: document.body.dataset.frame === "visual" ? !VS.inStock : !state.inStock})});
   if(!r.ok) throw new Error(r.status);
   return await r.blob();
 }
@@ -2976,7 +2980,7 @@ const TEXTQ = (() => {
     clearFilters(true);
     if(u.types.length){ state.types.clear(); u.types.forEach(x => state.types.add(x)); } else applyDefaultTypes();
     u.colours.forEach(c => state.colours.add(c)); u.patterns.forEach(x => state.patterns.add(x));
-    state.inStock = u.inStock; state.need = u.need || null; state.query = "";
+    state.inStock = true; state.need = u.need || null; state.query = "";
     syncFilterInputs(); go("browse"); applyFilters();
   };
   return {parse, show, apply, COLW, PATW};
@@ -2985,7 +2989,7 @@ function syncFilterInputs(){
   document.querySelectorAll("#patternFilters input, #patternFiltersTop input").forEach(i => i.checked = state.patterns.has(i.value));
   document.querySelectorAll("#typeFilters input, #typeFiltersTop input").forEach(i => i.checked = state.types.has(i.value));
   document.querySelectorAll(".swatch").forEach(b => b.classList.toggle("on", state.colours.has(b.dataset.c)));
-  document.querySelectorAll(".instock-chip input").forEach(i => i.checked = state.inStock);
+  document.querySelectorAll(".instock-chip input, #inStockOnly").forEach(i => i.checked = !state.inStock);
 }
 
 const GUIDE = (() => {
@@ -3058,7 +3062,7 @@ const THEMES = (() => {
   const family = sku => String(sku || "").replace(/[-\/]\s*[A-Za-z0-9]{1,4}$/, "").trim();
   function groups(){
     const m = new Map();
-    PRODUCTS.forEach(p => { if(p.p) { if(!m.has(p.p)) m.set(p.p, []); m.get(p.p).push(p); } });
+    PRODUCTS.forEach(p => { if(p.p && inStockItem(p)) { if(!m.has(p.p)) m.set(p.p, []); m.get(p.p).push(p); } });   // themes show designs in stock only
     return [...m.entries()].map(([name, list]) => ({name, list}));
   }
   function pick(list){            // in stock first, one design per family before any second colourway
@@ -3103,7 +3107,7 @@ const THEMES = (() => {
 })();
 
 /* ================= FRAME 2 : FILTERS ================= */
-const state = {patterns:new Set(), colours:new Set(), types:new Set(), collection:"", inStock:false, query:"", need:null};   // need: {qty, unit:"rolls"|"sqft"|"sqm"|"m"}
+const state = {patterns:new Set(), colours:new Set(), types:new Set(), collection:"", inStock:true, query:"", need:null};   // inStock true = zero-stock designs hidden (default)   // need: {qty, unit:"rolls"|"sqft"|"sqm"|"m"}
 /* roll geometry from the roll-size text, e.g. "1.06metres (Width) x 15.6metres (Length)" */
 function rollDims(p){ const z = String(p.z || ""); const w = parseFloat((z.match(/([\d.]+)\s*m(?:etres?)?\s*\(?\s*width/i) || [])[1]) || widthOf(p) && parseFloat(widthOf(p)) / 100 || 0;
   const l = parseFloat((z.match(/([\d.]+)\s*m(?:etres?)?\s*\(?\s*length/i) || [])[1]) || 0; return {w, l, area: w && l ? w * l : 0}; }
@@ -3137,7 +3141,7 @@ function toggleColour(btn){
   applyFilters();
 }
 function toggleInStock(cb){
-  state.inStock = cb.checked;
+  state.inStock = !cb.checked;   // the box is "Show not in stock"
   document.querySelectorAll("input[data-instock]").forEach(i => i.checked = cb.checked);
   applyFilters();
 }
@@ -3151,7 +3155,7 @@ function typesAreDefault(){
 function clearFilters(silent){
   state.need = null;
   state.patterns.clear(); state.colours.clear(); state.types.clear();
-  state.collection=""; state.inStock=false; state.query="";
+  state.collection=""; state.inStock=true; state.query="";
   document.querySelectorAll("#patternFilters input, #patternFiltersTop input, #typeFilters input, #typeFiltersTop input").forEach(i=>i.checked=false);
   document.querySelectorAll("#colourFilters .swatch, #colourFiltersTop .swatch").forEach(s=>s.classList.remove("sel"));
   document.querySelectorAll("input[data-instock]").forEach(i=>i.checked=false);
@@ -3176,7 +3180,7 @@ function applyFilters(){
     if(state.colours.size && !(p.k||[]).some(c => state.colours.has(c))) return false;
     if(state.types.size && !state.types.has(p.t)) return false;
     if(state.collection && p.c !== state.collection) return false;
-    if(state.inStock && p.n <= 0) return false;
+    if(state.inStock && !inStockItem(p)) return false;
     if(state.need){ const r = rollsNeeded(p, state.need); if(r != null && (p.n || 0) < r) return false; }
     if(q && !((p.sku+" "+(p.sn||"")+" "+p.t+" "+p.c+" "+p.p+" "+(p.k||[]).join(" ")).toLowerCase().includes(q))) return false;
     return true;
@@ -3364,7 +3368,7 @@ const LIVE_RECS = {};
 function simLabel(pc, pinned, sku){ if(pinned && pinned.includes(sku)) return ["Staff-verified", "ok"]; return [pc >= 85 ? "Very close" : pc >= 70 ? "Similar" : "Related", pc >= 85 ? "ok" : ""]; }
 function simGrid(list, ref, pinned){
   const staff = !!STAFF.user;
-  return `<div class="pgrid">${list.map(([s,pc]) => { if(!byId.has(s)) return ""; const [lbl, cls] = simLabel(pc, pinned, s);
+  return `<div class="pgrid">${list.map(([s,pc]) => { if(!byId.has(s)) return ""; if(state.inStock && !inStockItem(byId.get(s))) return ""; const [lbl, cls] = simLabel(pc, pinned, s);
     return cardHTML(byId.get(s), lbl, cls, staff ? pairButtons(ref, s) : ""); }).join("")}</div>`;
 }
 function pairButtons(ref, sku){
@@ -3408,7 +3412,7 @@ const SESSION = (() => {                /* digits only: the service keys "more o
   try { let s = localStorage.getItem("wcd_session"); if(!s || !/^\d{10}$/.test(s)){ s = String(Math.floor(Math.random()*9e9)+1e9); localStorage.setItem("wcd_session", s); } return s; }
   catch(e){ return String(Math.floor(Math.random()*9e9)+1e9); }
 })();
-const VS = { file:null, src:null, mode:"both", width:0, inStock:false, qty:"", list:null, raw:null, reqId:null, fb:{}, busy:false };
+const VS = { file:null, src:null, mode:"both", width:0, inStock:true, qty:"", list:null, raw:null, reqId:null, fb:{}, busy:false };
 
 function hexRGB(h){ return [parseInt(h.slice(1,3),16), parseInt(h.slice(3,5),16), parseInt(h.slice(5,7),16)]; }
 function rgbDist(a,b){
@@ -3453,7 +3457,7 @@ function syncEngineBtns(){
 }
 function setVSEngine(m){ if(VS.mode === m) return; VS.mode = m; syncEngineBtns(); if(VS.file) runSearch(); }
 function setVSWidth(w){ w = Number(w)||0; if(VS.width === w) return; VS.width = w; syncEngineBtns(); if(VS.file) runSearch(); }
-function vsToggleInStock(cb){ VS.inStock = cb.checked; if(VS.file) runSearch(); }
+function vsToggleInStock(cb){ VS.inStock = !cb.checked; if(VS.file) runSearch(); }   // the box is "Show not in stock"
 function vsSetQty(v){ VS.qty = String(v||"").trim(); }
 function vsQtyGo(){ if(VS.file) runSearch(); }
 function vsParams(extra){
@@ -3618,7 +3622,7 @@ function vsClearFilters(){
   document.querySelectorAll("#vsPatternFilters input, #vsTypeFilters input").forEach(i=>i.checked=false);
   document.querySelectorAll("#vsColourFilters .swatch").forEach(s=>s.classList.remove("sel"));
   let stockChanged = false;
-  const is = document.getElementById("vsInStock"); if(is && is.checked){ is.checked = false; VS.inStock = false; stockChanged = true; }
+  const is = document.getElementById("vsInStock"); if(is && is.checked){ is.checked = false; VS.inStock = true; stockChanged = true; }   // back to the default: in stock only
   if(VS.file && (hadType || stockChanged)){ runSearch(); return; }   // these two filters are applied by the engine: search again
   renderVS();
 }
@@ -3715,7 +3719,7 @@ function bootDeepLink(){
   if(["pattern","colour","both"].includes(g("mode"))) VS.mode = g("mode");
   if(["53","106"].includes(g("w"))) VS.width = Number(g("w"));
   if(g("qty") && Number(g("qty")) > 0){ VS.qty = String(Number(g("qty"))); const qi = document.querySelector(".vs-qty input"); if(qi) qi.value = VS.qty; }
-  if(g("stock") === "1"){ VS.inStock = true; const cb = document.getElementById("vsInStock"); if(cb) cb.checked = true; }
+  if(g("stock") === "0"){ VS.inStock = false; const cb = document.getElementById("vsInStock"); if(cb) cb.checked = true; }
   syncEngineBtns();
   go("visual");
   if(rid && /^[a-z0-9]{6,20}$/i.test(rid)) openStoredSearch(rid);

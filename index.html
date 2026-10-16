@@ -1784,6 +1784,12 @@
   #admSite .ss-bar{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
   .ss-hist{list-style:none;padding:0;margin:0}.ss-hist li{display:flex;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--sand-200,#EADFD0);flex-wrap:wrap}
   @media(max-width:760px){#admSite .ss-grid,#admSite .ss-row{grid-template-columns:1fr}}
+
+  /* substitutes: quantity box, rolls needed and other-pattern marks */
+  .sub-needbox{display:inline-flex;align-items:center;gap:8px;margin:6px 0 12px;font-size:13.5px;font-weight:600}
+  .sub-needbox input{width:84px;border:1px solid var(--sand-200,#EADFD0);border-radius:10px;padding:7px 9px;font:inherit;background:#fff}
+  .sub-need{font-size:12.5px;font-weight:600;color:var(--ink,#17202A);margin-top:4px}
+  .sub-other{font-size:12px;color:var(--ink-soft,#56636E);margin-top:2px}
 </style>
 </head>
 <body>
@@ -3369,10 +3375,31 @@ function renderProduct(sku){
 }
 const LIVE_RECS = {};
 function simLabel(pc, pinned, sku){ if(pinned && pinned.includes(sku)) return ["Staff-verified", "ok"]; return [pc >= 85 ? "Very close" : pc >= 70 ? "Similar" : "Related", pc >= 85 ? "ok" : ""]; }
-function simGrid(list, ref, pinned){
-  const staff = !!STAFF.user;
-  return `<div class="pgrid">${list.map(([s,pc]) => { if(!byId.has(s)) return ""; if(state.inStock && !inStockItem(byId.get(s))) return ""; const [lbl, cls] = simLabel(pc, pinned, s);
-    return cardHTML(byId.get(s), lbl, cls, staff ? pairButtons(ref, s) : ""); }).join("")}</div>`;
+/* wall area one roll covers, from its roll size (metres), so a quantity can be compared between 53 cm and 106 cm rolls */
+function rollCoverM2(p){
+  const m = /([\d.]+)\s*m(?:etres?)?\s*\(?width\)?\s*x\s*([\d.]+)\s*m/i.exec(p && p.z || "");
+  return m ? parseFloat(m[1]) * parseFloat(m[2]) : 0;
+}
+let PM_NEED = "";   // rolls of the current design the customer needs (product page)
+function simGrid(list, ref, pinned, opts){
+  const staff = !!STAFF.user, o = opts || {}, refP = byId.get(ref), refPat = refP ? (refP.p || "") : "";
+  const need = Number(o.need || 0), refCov = rollCoverM2(refP);
+  let shown = 0;
+  const cards = list.map(([s,pc]) => {
+    if(!byId.has(s) || (o.max && shown >= o.max)) return "";
+    const q = byId.get(s);
+    if(state.inStock && !inStockItem(q)) return "";
+    let extra = "";
+    if(need > 0 && (q.u || "").toLowerCase().startsWith("roll") && refCov > 0){
+      const cov = rollCoverM2(q), rolls = cov > 0 ? Math.ceil(need * refCov / cov) : need;
+      if(q.q !== "enquire" && (q.n || 0) < rolls) return "";               // not enough stock for this customer
+      extra += `<div class="sub-need">Needs ${rolls} roll${rolls === 1 ? "" : "s"} of this one</div>`;
+    }
+    if(o.patternFirst && refPat && q.p !== refPat) extra += `<div class="sub-other">Other pattern: ${esc(q.p || "not tagged")}</div>`;
+    const [lbl, cls] = simLabel(pc, pinned, s); shown++;
+    return cardHTML(q, lbl, cls, extra + (staff ? pairButtons(ref, s) : ""));
+  }).join("");
+  return `<div class="pgrid">${cards || `<div class="pm-empty">No in-stock substitutes${need ? " with enough stock for " + need + " rolls" : ""}. Tick “Show not in stock” or lower the quantity.</div>`}</div>`;
 }
 function pairButtons(ref, sku){
   return `<div class="fbrow pairrow" data-ref="${esc(ref)}" data-sku="${esc(sku)}">
@@ -3398,8 +3425,10 @@ function fillSims(p){
     return;
   }
   let html = "";
-  if(r.s.length) html += `<div class="pm-sim"><h3>Similar ${esc(p.t || "designs")}</h3>
-    <div class="sub">Closest designs by look in the same product type, from the WCD design engine${pinned.length ? ", staff-verified first" : ""}.${STAFF.user ? " Tick ✓ / ✗ to teach it." : ""}</div>${simGrid(r.s, p.sku, pinned)}</div>`;
+  if(r.s.length) html += `<div class="pm-sim"><h3>Substitutes</h3>
+    <div class="sub">${pinned.length ? "Staff-verified first, then " : ""}${p.p ? "the same pattern (" + esc(p.p) + ") first" : "the closest look first"}, from every wallpaper type, in stock. Check the width on each card: a 106 cm roll covers about three times the wall of a 53 cm roll.${STAFF.user ? " Tick ✓ / ✗ to teach it." : ""}</div>
+    <label class="sub-needbox">Customer needs <input type="number" min="0" step="1" inputmode="numeric" value="${esc(PM_NEED)}" placeholder="e.g. 14" oninput="PM_NEED=this.value; clearTimeout(window.__needT); window.__needT=setTimeout(()=>{ const i=document.activeElement===this; fillSims(byId.get('${esc(p.sku)}')); if(i){ const x=document.querySelector('.sub-needbox input'); if(x){ x.focus(); x.setSelectionRange(x.value.length,x.value.length);} } },350)"> rolls of ${esc(p.sku)}</label>
+    ${simGrid(r.s, p.sku, pinned, {patternFirst: true, need: PM_NEED, max: 12})}</div>`;
   if(r.f.length) html += `<div class="pm-sim"><h3>Same colours, different design</h3>
     <div class="sub">Designs that share this product's colours but look different, for customers who want the tone, not the pattern.</div>${simGrid(r.f, p.sku, pinned)}</div>`;
   box.innerHTML = html;
@@ -3534,7 +3563,7 @@ async function runSearch(more){
   document.getElementById("qImg").onload = () => { if(SEL.box){ selFit(); document.getElementById("qSel").style.display = "block"; } };
   document.getElementById("qTags").innerHTML = "";
   document.getElementById("vsFeedback").innerHTML = "";
-  if(!more){ document.getElementById("vsGrid").innerHTML = ""; VS.fb = {}; if(SELECTED.size) clearSelection(); }   // a new photo starts a fresh selection
+  if(!more){ document.getElementById("vsGrid").innerHTML = ""; VS.fb = {}; VS.patternFirst = true; if(SELECTED.size) clearSelection(); }   // a new photo starts a fresh selection
   setVSStatus(more ? "Looking for more options…" : "Sending the photo to the WCD design engine…", null);
   const t0 = Date.now();
   const tick = setInterval(()=>{ const s = Math.round((Date.now()-t0)/1000);
@@ -3635,14 +3664,30 @@ function vsVisible(){
   if(vsF.patterns.size) list = list.filter(x => vsF.patterns.has(x.p.p));
   if(vsF.colours.size)  list = list.filter(x => (x.p.k||[]).some(c => vsF.colours.has(c)));
   if(vsF.types.size)    list = list.filter(x => vsF.types.has(x.p.t));
-  return list;
+  return vsPatternFirst(list);
+}
+/* the photo's pattern: the tag most of the closest results share (staff fix > AI vision tags > engine guess) */
+function vsDetectPattern(list){
+  const top = list.slice(0, 8), score = {};
+  top.forEach((x, i) => { const pt = x.p.p; if(pt) score[pt] = (score[pt] || 0) + (8 - i); });
+  const best = Object.entries(score).sort((a, b) => b[1] - a[1])[0];
+  const total = top.reduce((a, x, i) => a + (x.p.p ? 8 - i : 0), 0);
+  return best && total && best[1] / total >= 0.4 ? best[0] : "";
+}
+function vsPatternFirst(list){
+  VS.detected = vsDetectPattern(list);
+  if(!VS.detected || VS.patternFirst === false || vsF.patterns.size) return list;
+  return [...list.filter(x => x.p.p === VS.detected), ...list.filter(x => x.p.p !== VS.detected)];
 }
 function renderVS(){
   if(!VS.list) return;
   const list = vsVisible();
   vsBadge("patterns", vsF.patterns.size); vsBadge("colours", vsF.colours.size); vsBadge("types", vsF.types.size);
   const showing = document.getElementById("vsShowing");
-  if(showing) showing.textContent = list.length ? `${list.length} design${list.length===1?"":"s"} · ordered by match` : "";
+  if(showing){
+    const pf = VS.detected && VS.patternFirst !== false && !vsF.patterns.size;
+    showing.innerHTML = list.length ? `${list.length} design${list.length===1?"":"s"} · ${pf ? `<b>${esc(VS.detected)}</b> first, then the closest others · <a href="#" onclick="VS.patternFirst=false;renderVS();return false;">order by look only</a>` : (VS.detected && VS.patternFirst === false ? `ordered by look · <a href="#" onclick="VS.patternFirst=true;renderVS();return false;">${esc(VS.detected)} first</a>` : "ordered by match")}` : "";
+  }
   const staff = !!STAFF.user;
   document.getElementById("vsGrid").innerHTML = list.length
     ? list.map(x => cardHTML(x.p, x.lbl.txt, x.lbl.cls, staff ? fbButtons(x.p.sku) : "")).join("")

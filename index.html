@@ -1762,6 +1762,28 @@
     .th-jump{top:var(--topbar-h,112px)} .th-jump a{padding:7px 12px;font-size:12.5px}
     .th-small{grid-template-columns:1fr 1fr}
   }
+
+  /* site settings: announcement bar, uploaded logo and hero picture, admin panel */
+  .site-announce{background:var(--coral,#FF5A3C);color:#fff;text-align:center;font-size:13.5px;font-weight:600;padding:8px 14px;position:relative;z-index:60}
+  .site-logo{height:34px;width:auto;display:block;border-radius:6px}.site-logo.foot{height:30px}
+  .hero-photo{width:100%;height:100%;min-height:320px;object-fit:cover;border-radius:24px;display:block}
+  .foot-wa{margin-top:10px}.foot-wa a{color:inherit;text-decoration:underline}
+  #admSite .ss-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+  #admSite fieldset{border:1px solid var(--sand-200,#EADFD0);border-radius:14px;padding:14px 16px;margin:0;display:flex;flex-direction:column;gap:10px}
+  #admSite fieldset.ss-wide{grid-column:1 / -1}
+  #admSite legend{font-weight:700;padding:0 6px}
+  #admSite label{display:flex;flex-direction:column;gap:4px;font-size:13px;font-weight:600}
+  #admSite input:not([type=checkbox]):not([type=color]):not([type=file]),#admSite textarea{border:1px solid var(--sand-200,#EADFD0);border-radius:10px;padding:8px 10px;font:inherit;font-weight:400;background:#fff}
+  #admSite .ss-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  #admSite .ss-check{flex-direction:row;align-items:center;gap:8px;font-weight:500}
+  #admSite .ss-img{display:flex;align-items:center;gap:10px}#admSite .ss-img img{height:56px;max-width:160px;object-fit:contain;border-radius:8px;background:#f4f1ea}
+  #admSite .ss-none{font-size:12px;color:var(--ink-soft)}#admSite .ss-l{font-size:13px;font-weight:600}
+  #admSite .ss-themes{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px}
+  #admSite .ss-themes li{display:flex;align-items:center;gap:8px;flex-wrap:wrap}#admSite .ss-tn{min-width:110px;font-weight:600}
+  #admSite .ss-ren{flex:1;min-width:140px}
+  #admSite .ss-bar{display:flex;align-items:center;gap:12px;margin:14px 0 4px}
+  .ss-hist{list-style:none;padding:0;margin:0}.ss-hist li{display:flex;gap:12px;align-items:center;padding:6px 0;border-bottom:1px solid var(--sand-200,#EADFD0);flex-wrap:wrap}
+  @media(max-width:760px){#admSite .ss-grid,#admSite .ss-row{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -2193,6 +2215,7 @@ const LAYOUT = (() => {
       </div><div class="foot-base"><span>© 2026 WCD · Wallpaper &amp; Carpets Distributors (M) Sdn Bhd</span><span class="lang-foot"></span></div>`;
       $(".lang-foot").appendChild(I18N.switcher());
       I18N.apply();
+      try{ applySiteSettings(); }catch(e){}
       staffTabVisible();
       if(location.hash === "#staff") go("training");
       window.addEventListener("hashchange", () => { if(location.hash === "#staff"){ staffTabVisible(); go("training"); } });
@@ -2364,20 +2387,56 @@ Promise.all([
     document.getElementById("frame-home").classList.remove("active");
   });
 
-/* site settings (titles, PDF layout) are kept on the server: Training → Admin → Site text & PDF */
-const SETTINGS = {titles:{}, pdf:{title:"", cols:2,
+/* site settings are kept on the server (Training → Admin → Site settings) and applied to every page on every visit:
+   brand (name, logo, colours), home page texts and picture, contact numbers, announcement bar, themes and the PDF */
+const SETTINGS = {titles:{}, brand:{}, home:{}, contact:{}, announcement:{}, themes:{order:[], hidden:[], rename:{}}, training:{},
+  pdf:{title:"", footer:"", cols:2,
   fields:{type:true, collection:true, rollsize:true, width:true, backing:true, pattern:true, colours:true, stock:true, roomimages:true, match:true}}};
 function mergeSettings(st){
   if(!st || typeof st !== "object") return;
-  if(st.training) SETTINGS.training = Object.assign(SETTINGS.training || {}, st.training);
-  if(st.titles) Object.assign(SETTINGS.titles, st.titles);
-  if(st.pdf){ if(st.pdf.title !== undefined) SETTINGS.pdf.title = st.pdf.title; if(st.pdf.fields) Object.assign(SETTINGS.pdf.fields, st.pdf.fields); }
+  for(const k of ["training", "brand", "home", "contact", "announcement"]) if(st[k] && typeof st[k] === "object") SETTINGS[k] = Object.assign({}, SETTINGS[k] || {}, st[k]);
+  if(st.themes && typeof st.themes === "object") SETTINGS.themes = {order: st.themes.order || [], hidden: st.themes.hidden || [], rename: st.themes.rename || {}};
+  if(st.titles) SETTINGS.titles = Object.assign({}, st.titles);
+  if(st.pdf){ if(st.pdf.title !== undefined) SETTINGS.pdf.title = st.pdf.title; if(st.pdf.footer !== undefined) SETTINGS.pdf.footer = st.pdf.footer; if(st.pdf.fields) Object.assign(SETTINGS.pdf.fields, st.pdf.fields); }
 }
+function siteAsset(p){ if(!p) return ""; return String((window.WCD && window.WCD.api) || "/marketplace/api").replace(/\/marketplace\/api\/?$/, "") + p; }
 function applySettings(){
   const T = SETTINGS.titles || {};
   if(T.hero) document.getElementById("heroTitle").textContent = T.hero;
   if(T.sub) document.getElementById("heroSub").textContent = T.sub;
   if(T.homeSec) document.getElementById("homeSecTitle").textContent = T.homeSec;
+  try{ applySiteSettings(); }catch(e){ console.error("site settings", e); }
+}
+function applySiteSettings(){
+  const B = SETTINGS.brand || {}, C = SETTINGS.contact || {}, A = SETTINGS.announcement || {}, H = SETTINGS.home || {}, T = SETTINGS.titles || {};
+  const rs = document.documentElement.style;
+  if(B.accent){ rs.setProperty("--coral", B.accent); rs.setProperty("--coral-700", B.accent); rs.setProperty("--hero-accent", B.accent); }
+  if(B.main){ rs.setProperty("--em-900", B.main); rs.setProperty("--green", B.main); }
+  const name = String(B.name || "WCD Vision").trim();
+  const word = name === "WCD Vision" ? `WCD <small>Vision</small>` : esc(name);
+  document.querySelectorAll(".logo .word, .foot-logo b").forEach(el => { el.innerHTML = word; });
+  if(B.logo){
+    const src = esc(siteAsset(B.logo));
+    document.querySelectorAll(".logo .mark").forEach(m => { m.innerHTML = `<img src="${src}" alt="${esc(name)}" class="site-logo">`; });
+    document.querySelectorAll(".foot-logo svg, .foot-logo img").forEach(x => { x.outerHTML = `<img src="${src}" alt="" class="site-logo foot">`; });
+  }
+  if(name !== "WCD Vision") document.title = document.title.replace(/WCD Vision/g, name);
+  if(H.hero_image){ const g = document.querySelector(".hero-grid"); if(g && g.children[1] && !g.querySelector(".hero-photo")) g.children[1].innerHTML = ""; const box = g && g.children[1]; if(box){ box.innerHTML = `<img class="hero-photo" src="${esc(siteAsset(H.hero_image))}" alt="">`; } }
+  if(T.cta){ const b = document.querySelector(".guide-btn [data-i18n='hero.guide'], .guide-btn .cta-txt"); if(b){ b.textContent = T.cta; b.classList.add("cta-txt"); b.removeAttribute("data-i18n"); } }
+  const fa = document.querySelector(".foot-addr");
+  if(fa){ const lines = [C.address, C.phone, C.email, C.hours].filter(Boolean).map(esc); if(lines.length) fa.innerHTML = lines.join("<br>"); }
+  const fb = document.querySelector(".foot-brand");
+  if(fb){
+    let w = fb.querySelector(".foot-wa"); if(!w){ w = document.createElement("p"); w.className = "foot-wa"; fb.appendChild(w); }
+    const d = x => String(x || "").replace(/\D/g, "");
+    w.innerHTML = [C.cs_wa ? `<a href="https://wa.me/${d(C.cs_wa)}" target="_blank" rel="noopener">WhatsApp ${esc(C.cs_name || "Customer Service")}: ${esc(C.cs_wa)}</a>` : "",
+                   C.sarah_wa ? `<a href="https://wa.me/${d(C.sarah_wa)}" target="_blank" rel="noopener">Ask Sarah on WhatsApp: ${esc(C.sarah_wa)}</a>` : ""].filter(Boolean).join("<br>");
+  }
+  let bar = document.getElementById("siteAnnounce"); const today = new Date().toISOString().slice(0, 10);
+  const show = A.on && A.text && (!A.from || today >= A.from) && (!A.to || today <= A.to);
+  if(show){ if(!bar){ bar = document.createElement("div"); bar.id = "siteAnnounce"; bar.className = "site-announce"; bar.setAttribute("role", "status"); document.body.prepend(bar); } bar.textContent = A.text; }
+  else if(bar) bar.remove();
+  try{ THEMES.dirty(); if(document.body.dataset.frame === "collections") THEMES.render(); }catch(e){}
 }
 
 function init(data){
@@ -3018,12 +3077,16 @@ const THEMES = (() => {
     const main = all.filter(g => g.list.length >= MIN && g.name !== "Plain").sort((a, b) => b.list.length - a.list.length);
     const plain = all.filter(g => g.name === "Plain" && g.list.length >= MIN);
     const small = all.filter(g => g.list.length < MIN).sort((a, b) => b.list.length - a.list.length);
-    const rows = [...main, ...plain];
+    let rows = [...main, ...plain];
+    const TS = SETTINGS.themes || {}, hidden = new Set(TS.hidden || []), order = TS.order || [], ren = TS.rename || {};
+    rows = rows.filter(g => !hidden.has(g.name));
+    if(order.length){ const pos = n => { const i = order.indexOf(n); return i < 0 ? 1e6 : i; }; rows = rows.map((g, i) => ({g, i})).sort((a, b) => (pos(a.g.name) - pos(b.g.name)) || (a.i - b.i)).map(x => x.g); }
+    const dn = n => ren[n] || n;
     const q = n => `'${esc(n).replace(/'/g, "\\'")}'`;
     box.innerHTML =
-      `<div class="th-jump">${rows.map(g => `<a href="#" onclick="THEMES.jump(${q(g.name)});return false;">${esc(g.name)}</a>`).join("")}${small.length ? `<a href="#" onclick="THEMES.jump('__more');return false;">More themes</a>` : ""}</div>` +
-      rows.map(g => `<section class="th-row" id="${slug(g.name)}"><div class="th-head"><h3>${esc(g.name)}</h3><span>${g.list.length.toLocaleString()} designs</span><a href="#" onclick="THEMES.open(${q(g.name)});return false;">See all →</a></div>
-        <div class="th-strip">${pick(g.list).map(tile).join("")}<button class="th-more" onclick="THEMES.open(${q(g.name)})">See all ${g.list.length.toLocaleString()}<small>${esc(g.name)} in Browse</small></button></div></section>`).join("") +
+      `<div class="th-jump">${rows.map(g => `<a href="#" onclick="THEMES.jump(${q(g.name)});return false;">${esc(dn(g.name))}</a>`).join("")}${small.length ? `<a href="#" onclick="THEMES.jump('__more');return false;">More themes</a>` : ""}</div>` +
+      rows.map(g => `<section class="th-row" id="${slug(g.name)}"><div class="th-head"><h3>${esc(dn(g.name))}</h3><span>${g.list.length.toLocaleString()} designs</span><a href="#" onclick="THEMES.open(${q(g.name)});return false;">See all →</a></div>
+        <div class="th-strip">${pick(g.list).map(tile).join("")}<button class="th-more" onclick="THEMES.open(${q(g.name)})">See all ${g.list.length.toLocaleString()}<small>${esc(dn(g.name))} in Browse</small></button></div></section>`).join("") +
       (small.length ? `<section class="th-row" id="th-__more"><div class="th-head"><h3>More themes</h3><span>${small.length} smaller themes</span></div><div class="th-small">${small.map(g => { const s0 = pick(g.list)[0];
         return `<button onclick="THEMES.open(${q(g.name)})">${s0 ? `<img src="${esc(s0.i)}" alt="" loading="lazy" onerror="this.remove()">` : ""}<b>${esc(g.name)}</b><span>${g.list.length} design${g.list.length === 1 ? "" : "s"}</span></button>`; }).join("")}</div></section>` : "");
     built = true;
@@ -3035,7 +3098,8 @@ const THEMES = (() => {
     go("browse"); applyFilters();
   }
   function jump(name){ const el = document.getElementById(name === "__more" ? "th-__more" : slug(name)); if(el){ const y = el.getBoundingClientRect().top + window.scrollY - 140; window.scrollTo({top: y, behavior: "smooth"}); } }
-  return {render, open, jump, dirty(){ built = false; }, ensure(){ if(!built) render(); }};
+  function names(){ return groups().filter(g => g.list.length >= MIN).sort((a, b) => b.list.length - a.list.length).map(g => ({name: g.name, n: g.list.length})); }
+  return {render, open, jump, names, dirty(){ built = false; }, ensure(){ if(!built) render(); }};
 })();
 
 /* ================= FRAME 2 : FILTERS ================= */
@@ -4207,15 +4271,10 @@ async function renderAdmin(){
     <div id="admCentral" class="tr-msg">Loading…</div>
     <h4>Design engine</h4>
     <div id="admService" class="tr-msg">Loading…</div>
-    <h4>Site text &amp; PDF</h4>
-    <form class="tr-settings" onsubmit="admSaveSettings(event)">
-      <label>Home title <input id="stTitle" value="${esc((SETTINGS.titles||{}).hero||"")}" placeholder="Find the perfect surface, visually."></label>
-      <label>Home subtitle <input id="stSub" value="${esc((SETTINGS.titles||{}).sub||"")}" placeholder="Search the entire WCD catalogue…"></label>
-      <label>PDF header text <input id="stPdf" value="${esc(SETTINGS.pdf.title||"")}" placeholder="WCD Wallcoverings"></label>
-      <label>Weekly target per trainer (matches reviewed; 0 = none) <input id="stTarget" type="number" min="0" value="${esc(String((SETTINGS.training||{}).weekly_target||0))}"></label>
-      <div class="tr-checks">${["type","collection","rollsize","width","backing","pattern","colours","stock","roomimages","match"].map(k =>
-        `<label><input type="checkbox" data-f="${k}" ${F[k]!==false?"checked":""}> ${k}</label>`).join("")}</div>
-      <button class="tr-btn primary">Save settings</button><span class="tr-msg" id="stMsg"></span></form>`;
+    <h4>Site settings</h4>
+    <p class="tr-msg">Changes here appear on every page of the website, in Sarah's links and on the PDF as soon as you press Save. Every save is kept in History below.</p>
+    <div id="admSite"></div>`;
+  renderSiteSettings();
   renderService(); renderCentral();
 }
 async function renderCentral(){
@@ -4274,6 +4333,118 @@ async function admReset(u){ if(!confirm("Reset password for " + u + "?")) return
 async function admRole(u, r){ await staffFetch("/admin/users/role", {method:"POST", body: JSON.stringify({username:u, role:r})}); renderAdmin(); }
 async function admRemove(u){ if(!confirm("Remove " + u + "? Their judgements stay.")) return; await staffFetch("/admin/users/remove", {method:"POST", body: JSON.stringify({username:u})}); renderAdmin(); }
 async function admFeed(){ const j = await staffFetch("/admin/feed", {method:"POST", body:"{}"}); toast(j.state === "started" ? "Rebuilding the feed (about 2 minutes)" : (j.detail || j.state)); }
+/* ---- Admin: Site settings (brand, home, contact, announcement, themes, PDF) ---- */
+let SITE_DRAFT = null;
+function siteFieldsHTML(){
+  const S = SITE_DRAFT, B = S.brand, H = S.home, C = S.contact, A = S.announcement, P = S.pdf, T = S.titles;
+  const v = x => esc(x == null ? "" : String(x));
+  const img = (key, url, label) => `<div class="ss-img">${url ? `<img src="${esc(siteAsset(url))}" alt="">` : `<span class="ss-none">none</span>`}
+      <label class="tr-btn sm">Upload ${label}<input type="file" accept="image/png,image/jpeg,image/webp" hidden onchange="ssUpload(this,'${key}')"></label>
+      ${url ? `<button type="button" class="tr-btn sm" onclick="ssClear('${key}')">Remove</button>` : ""}</div>`;
+  const F = P.fields || {};
+  const themes = (typeof THEMES !== "undefined" && THEMES.names) ? THEMES.names() : [];
+  const order = (S.themes.order || []).filter(n => themes.some(t => t.name === n));
+  const listed = [...order, ...themes.map(t => t.name).filter(n => !order.includes(n))];
+  return `
+  <div class="ss-grid">
+    <fieldset><legend>Brand</legend>
+      <label>Site name <input data-k="brand.name" value="${v(B.name || "WCD Vision")}"></label>
+      <label>Tagline <input data-k="brand.tagline" value="${v(B.tagline)}" placeholder="Wallcoverings, visually."></label>
+      <div class="ss-l">Logo (PNG with a clear background works best)</div>${img("brand.logo", B.logo, "logo")}
+      <div class="ss-row"><label>Buttons and highlights <input type="color" data-k="brand.accent" value="${v(B.accent || "#FF5A3C")}"></label>
+        <label>Main colour <input type="color" data-k="brand.main" value="${v(B.main || "#0E5E45")}"></label></div>
+    </fieldset>
+    <fieldset><legend>Home page</legend>
+      <label>Headline <input data-k="titles.hero" value="${v(T.hero)}" placeholder="Find the perfect surface, visually."></label>
+      <label>Subtitle <textarea data-k="titles.sub" rows="2" placeholder="Search the entire WCD catalogue…">${v(T.sub)}</textarea></label>
+      <label>Main button text <input data-k="titles.cta" value="${v(T.cta)}" placeholder="Guide me in three steps"></label>
+      <label>Designs section title <input data-k="titles.homeSec" value="${v(T.homeSec)}" placeholder="Fresh from the catalogue"></label>
+      <div class="ss-l">Hero picture (a wide room photo, at least 1600 px)</div>${img("home.hero_image", H.hero_image, "picture")}
+    </fieldset>
+    <fieldset><legend>Contact and WhatsApp</legend>
+      <div class="ss-row"><label>Customer Service name <input data-k="contact.cs_name" value="${v(C.cs_name)}"></label>
+        <label>Customer Service WhatsApp <input data-k="contact.cs_wa" value="${v(C.cs_wa)}"></label></div>
+      <label>Sarah's WhatsApp <input data-k="contact.sarah_wa" value="${v(C.sarah_wa)}"></label>
+      <div class="ss-row"><label>Phone <input data-k="contact.phone" value="${v(C.phone)}"></label><label>Email <input data-k="contact.email" value="${v(C.email)}"></label></div>
+      <label>Address <textarea data-k="contact.address" rows="2">${v(C.address)}</textarea></label>
+      <label>Opening hours <input data-k="contact.hours" value="${v(C.hours)}"></label>
+    </fieldset>
+    <fieldset><legend>Announcement bar</legend>
+      <label class="ss-check"><input type="checkbox" data-k="announcement.on" ${A.on ? "checked" : ""}> Show a message across the top of every page</label>
+      <label>Message <input data-k="announcement.text" value="${v(A.text)}" placeholder="Closed on Friday 31 October for Deepavali."></label>
+      <div class="ss-row"><label>Show from <input type="date" data-k="announcement.from" value="${v(A.from)}"></label><label>Hide after <input type="date" data-k="announcement.to" value="${v(A.to)}"></label></div>
+    </fieldset>
+    <fieldset class="ss-wide"><legend>Themes</legend>
+      <p class="tr-msg">Order, rename or hide the rows on the Themes page.</p>
+      <ol class="ss-themes">${listed.map((n, i) => `<li data-n="${esc(n)}"><span class="ss-tn">${esc(n)}</span>
+        <input class="ss-ren" placeholder="Show as…" value="${v((S.themes.rename || {})[n])}">
+        <label class="ss-check"><input type="checkbox" class="ss-show" ${(S.themes.hidden || []).includes(n) ? "" : "checked"}> Show</label>
+        <button type="button" class="tr-btn sm" onclick="ssMove(${i},-1)" aria-label="Move up">↑</button><button type="button" class="tr-btn sm" onclick="ssMove(${i},1)" aria-label="Move down">↓</button></li>`).join("")}</ol>
+    </fieldset>
+    <fieldset class="ss-wide"><legend>PDF and training</legend>
+      <div class="ss-row"><label>PDF header title <input data-k="pdf.title" value="${v(P.title)}" placeholder="WCD · Design proposal"></label>
+        <label>Weekly target per trainer (0 = none) <input type="number" min="0" data-k="training.weekly_target" value="${v((S.training || {}).weekly_target || 0)}"></label></div>
+      <label>PDF footer note <input data-k="pdf.footer" value="${v(P.footer)}" placeholder="Colours may differ between screens, prints and the actual product…"></label>
+      <div class="tr-checks">${["type","collection","rollsize","width","backing","pattern","colours","stock","roomimages","match"].map(k =>
+        `<label><input type="checkbox" class="ss-pf" data-f="${k}" ${F[k] !== false ? "checked" : ""}> ${k}</label>`).join("")}</div>
+    </fieldset>
+  </div>
+  <div class="ss-bar"><button class="tr-btn primary" onclick="ssSave()">Save and publish</button><span class="tr-msg" id="ssMsg"></span></div>
+  <h4>History</h4><div id="ssHist" class="tr-msg">Loading…</div>`;
+}
+function ssCollect(){
+  const S = SITE_DRAFT;
+  document.querySelectorAll("#admSite [data-k]").forEach(el => {
+    const [a, b] = el.dataset.k.split("."); S[a] = S[a] || {};
+    S[a][b] = el.type === "checkbox" ? el.checked : (el.type === "number" ? Number(el.value || 0) : el.value);
+  });
+  const lis = [...document.querySelectorAll("#admSite .ss-themes li")];
+  S.themes = {order: lis.map(li => li.dataset.n), hidden: lis.filter(li => !li.querySelector(".ss-show").checked).map(li => li.dataset.n),
+              rename: Object.fromEntries(lis.map(li => [li.dataset.n, li.querySelector(".ss-ren").value.trim()]).filter(x => x[1]))};
+  S.pdf.fields = {}; document.querySelectorAll("#admSite .ss-pf").forEach(i => S.pdf.fields[i.dataset.f] = i.checked);
+  return S;
+}
+function renderSiteSettings(){
+  const box = document.getElementById("admSite"); if(!box) return;
+  SITE_DRAFT = SITE_DRAFT || JSON.parse(JSON.stringify({brand: SETTINGS.brand || {}, home: SETTINGS.home || {}, contact: SETTINGS.contact || {},
+    announcement: SETTINGS.announcement || {}, themes: SETTINGS.themes || {order: [], hidden: [], rename: {}}, titles: SETTINGS.titles || {},
+    pdf: {title: SETTINGS.pdf.title || "", footer: SETTINGS.pdf.footer || "", fields: SETTINGS.pdf.fields || {}}, training: SETTINGS.training || {}}));
+  box.innerHTML = siteFieldsHTML(); ssHistory();
+}
+function ssMove(i, d){ ssCollect(); const o = SITE_DRAFT.themes.order; const j = i + d; if(j < 0 || j >= o.length) return; [o[i], o[j]] = [o[j], o[i]]; renderSiteSettings(); }
+async function ssUpload(input, key){
+  const f = input.files && input.files[0]; if(!f) return;
+  if(f.size > 12 * 1024 * 1024){ toast("Choose a picture under 12 MB"); return; }
+  ssCollect(); const msg = document.getElementById("ssMsg"); if(msg) msg.textContent = "Uploading…";
+  try{
+    const fd = new FormData(); fd.append("file", f, f.name);
+    const r = await fetch(API + "/admin/upload", {method: "POST", headers: {"X-Staff-Token": STAFF.token}, body: fd});
+    const j = await r.json(); if(!r.ok) throw new Error(j.detail || r.status);
+    const [a, b] = key.split("."); SITE_DRAFT[a][b] = j.url; renderSiteSettings();
+    toast("Picture uploaded. Press Save and publish to use it.");
+  }catch(e){ toast("Upload failed: " + (e.message || e)); if(msg) msg.textContent = ""; }
+}
+function ssClear(key){ ssCollect(); const [a, b] = key.split("."); SITE_DRAFT[a][b] = ""; renderSiteSettings(); }
+async function ssSave(){
+  const S = ssCollect(); const msg = document.getElementById("ssMsg"); msg.textContent = "Saving…";
+  try{
+    const j = await staffFetch("/admin/settings", {method: "POST", body: JSON.stringify({...S, what: "Site settings saved"})});
+    if(j.status !== "OK") throw new Error("not saved");
+    mergeSettings(j); applySettings(); SITE_DRAFT = null; renderSiteSettings();
+    document.getElementById("ssMsg").textContent = "Saved and published. Visitors see it on their next page load.";
+  }catch(e){ msg.textContent = "Could not save: " + (e.message || e); }
+}
+async function ssHistory(){
+  const el = document.getElementById("ssHist"); if(!el) return;
+  try{ const j = await staffFetch("/admin/settings/history"); const h = j.history || [];
+    el.innerHTML = h.length ? `<ul class="ss-hist">${h.slice(0, 15).map(x => `<li><span>${esc(String(x.at || "").replace("T", " ").slice(0, 16))} UTC</span><span>${esc(x.what || "")}${x.by ? " · " + esc(x.by) : ""}</span><button class="tr-btn sm" onclick="ssRestore(${x.index})">Restore the version before this</button></li>`).join("")}</ul>` : "No changes saved yet.";
+  }catch(e){ el.textContent = "Could not load the history"; }
+}
+async function ssRestore(i){
+  if(!confirm("Restore the settings as they were before this change?")) return;
+  try{ const j = await staffFetch("/admin/settings/restore", {method: "POST", body: JSON.stringify({index: i})}); if(j.status !== "OK") throw new Error("not found");
+    mergeSettings(j); applySettings(); SITE_DRAFT = null; renderSiteSettings(); toast("Restored"); }catch(e){ toast("Could not restore"); }
+}
 async function admSaveSettings(ev){ ev.preventDefault();
   const fields = {}; document.querySelectorAll(".tr-checks input").forEach(i => fields[i.dataset.f] = i.checked);
   const s = {titles:{hero: document.getElementById("stTitle").value, sub: document.getElementById("stSub").value}, pdf:{title: document.getElementById("stPdf").value, fields}, training:{weekly_target: Number(document.getElementById("stTarget").value||0)}};

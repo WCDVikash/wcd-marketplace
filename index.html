@@ -2802,7 +2802,7 @@ function clearSelection(){
   updateSelbar();
 }
 /* ---- v9.11: select the top N of what is on screen (Browse, a collection, Visual Search) ---- */
-function topnList(){ const f = document.body.dataset.frame; if(f === "visual") return (VS.list || []).map(x => x.p.sku); if(f === "browse") return (FILTERED || []).map(p => p.sku); return []; }
+function topnList(){ const f = document.body.dataset.frame; if(f === "visual") return vsVisible().map(x => x.p.sku); if(f === "browse") return (FILTERED || []).map(p => p.sku); return []; }
 function selectTop(n){
   const list = topnList(); const take = list.slice(0, Math.min(n, PDF_MAX));
   SELECTED.clear(); take.forEach(s => SELECTED.add(s));
@@ -2847,7 +2847,7 @@ async function sharePDF(title, skus){
     const blob = await buildPDF(title, skus);
     const file = new File([blob], `WCD-designs-${skus.length}.pdf`, {type: "application/pdf"});
     if(navigator.canShare && navigator.canShare({files: [file]})){
-      try{ await navigator.share({files: [file], title: "WCD Vision designs"}); toast("Choose WhatsApp, then the chat"); }
+      try{ await navigator.share({files: [file]}); toast("Choose WhatsApp, then the chat"); }
       catch(err){ if(err && err.name !== "AbortError") throw err; }
       return;
     }
@@ -3394,6 +3394,7 @@ function vsSetQty(v){ VS.qty = String(v||"").trim(); }
 function vsQtyGo(){ if(VS.file) runSearch(); }
 function vsParams(extra){
   return Object.assign({session: SESSION, mode: VS.mode, width_cm: VS.width || null, in_stock_only: VS.inStock,
+                        filters: {product_types: [...vsF.types]},   // product type is applied by the engine (an empty list clears it), not only on the returned list
                         min_qty: VS.qty ? Number(VS.qty) : null, unit: VS.qty ? "Rolls" : "", top_k: 24,
                         roi: VS.roi || null, closeup: !!VS.closeup}, extra || {});
 }
@@ -3462,7 +3463,7 @@ async function runSearch(more){
   document.getElementById("qImg").onload = () => { if(SEL.box){ selFit(); document.getElementById("qSel").style.display = "block"; } };
   document.getElementById("qTags").innerHTML = "";
   document.getElementById("vsFeedback").innerHTML = "";
-  if(!more){ document.getElementById("vsGrid").innerHTML = ""; VS.fb = {}; }
+  if(!more){ document.getElementById("vsGrid").innerHTML = ""; VS.fb = {}; if(SELECTED.size) clearSelection(); }   // a new photo starts a fresh selection
   setVSStatus(more ? "Looking for more options…" : "Sending the photo to the WCD design engine…", null);
   const t0 = Date.now();
   const tick = setInterval(()=>{ const s = Math.round((Date.now()-t0)/1000);
@@ -3545,21 +3546,29 @@ function applyResult(j, more){
 const vsF = {patterns:new Set(), colours:new Set(), types:new Set()};
 function vsBadge(k,n){ const b=document.querySelector(`[data-vsbadge="${k}"]`); if(b){ b.textContent=n; b.classList.toggle("has",n>0); } }
 function vsTogglePattern(cb){ cb.checked ? vsF.patterns.add(cb.value) : vsF.patterns.delete(cb.value); renderVS(); }
-function vsToggleType(cb){ cb.checked ? vsF.types.add(cb.value) : vsF.types.delete(cb.value); renderVS(); }
+function vsToggleType(cb){ cb.checked ? vsF.types.add(cb.value) : vsF.types.delete(cb.value); if(VS.file){ runSearch(); } else { renderVS(); } }
 function vsToggleColour(btn){ const c = btn.dataset.c; vsF.colours.has(c) ? vsF.colours.delete(c) : vsF.colours.add(c); btn.classList.toggle("sel"); renderVS(); }
 function vsClearFilters(){
+  const hadType = vsF.types.size > 0;
   vsF.patterns.clear(); vsF.colours.clear(); vsF.types.clear();
   document.querySelectorAll("#vsPatternFilters input, #vsTypeFilters input").forEach(i=>i.checked=false);
   document.querySelectorAll("#vsColourFilters .swatch").forEach(s=>s.classList.remove("sel"));
-  const is = document.getElementById("vsInStock"); if(is && is.checked){ is.checked = false; VS.inStock = false; if(VS.file){ runSearch(); return; } }
+  let stockChanged = false;
+  const is = document.getElementById("vsInStock"); if(is && is.checked){ is.checked = false; VS.inStock = false; stockChanged = true; }
+  if(VS.file && (hadType || stockChanged)){ runSearch(); return; }   // these two filters are applied by the engine: search again
   renderVS();
 }
-function renderVS(){
-  if(!VS.list) return;
-  let list = VS.list;
+/* the visual results after the pattern / colour / product-type filters: what the customer sees, selects and exports */
+function vsVisible(){
+  let list = VS.list || [];
   if(vsF.patterns.size) list = list.filter(x => vsF.patterns.has(x.p.p));
   if(vsF.colours.size)  list = list.filter(x => (x.p.k||[]).some(c => vsF.colours.has(c)));
   if(vsF.types.size)    list = list.filter(x => vsF.types.has(x.p.t));
+  return list;
+}
+function renderVS(){
+  if(!VS.list) return;
+  const list = vsVisible();
   vsBadge("patterns", vsF.patterns.size); vsBadge("colours", vsF.colours.size); vsBadge("types", vsF.types.size);
   const showing = document.getElementById("vsShowing");
   if(showing) showing.textContent = list.length ? `${list.length} design${list.length===1?"":"s"} · ordered by match` : "";
@@ -3568,15 +3577,17 @@ function renderVS(){
     ? list.map(x => cardHTML(x.p, x.lbl.txt, x.lbl.cls, staff ? fbButtons(x.p.sku) : "")).join("")
     : `<div class="pm-empty">No close matches with those filters. Try removing one.</div>`;
   MOTION.cards(document.getElementById("vsGrid"), {each: .04}); MOTION.badges(document.getElementById("vsGrid"));
-  document.getElementById("vsActions").style.display = VS.list.length ? "flex" : "none";
+  document.getElementById("vsActions").style.display = list.length ? "flex" : "none";
+  try{ renderTopN(); }catch(e){}
   renderFeedbackBar();
 }
 function vsMore(){ if(VS.file) runSearch(true); }
 function vsTopPDF(){
-  if(!VS.list || !VS.list.length){ toast("Nothing to export"); return; }
-  downloadPDF("Visual search, top " + Math.min(20, VS.list.length), VS.list.slice(0, 20).map(x => x.p.sku));
+  const list = vsVisible();
+  if(!list.length){ toast("Nothing to export with those filters"); return; }
+  downloadPDF("Visual search, top " + Math.min(20, list.length), list.slice(0, 20).map(x => x.p.sku));
 }
-function vsSelectAll(){ VS.list.slice(0,20).forEach(x => SELECTED.add(x.p.sku)); document.querySelectorAll("#vsGrid .pcard").forEach(el => el.classList.toggle("sel", SELECTED.has(el.dataset.sku))); updateSelbar(); toast("Top " + Math.min(20, VS.list.length) + " added to your selection"); }
+function vsSelectAll(){ const list = vsVisible(); list.slice(0,20).forEach(x => SELECTED.add(x.p.sku)); document.querySelectorAll("#vsGrid .pcard").forEach(el => el.classList.toggle("sel", SELECTED.has(el.dataset.sku))); updateSelbar(); toast("Top " + Math.min(20, list.length) + " added to your selection"); }
 
 /* ---- Correct / Wrong feedback on results (logged-in staff only) ---- */
 function fbButtons(sku){

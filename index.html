@@ -2562,6 +2562,9 @@ function imgFail(el){ el.onerror = null; el.src = IMG_FALLBACK; }
 function inStockItem(p){ return !!p && ((p.n || 0) > 0 || p.q === "enquire"); }
 function stockInfo(p){
   const n = p.n, u = p.u || "";
+  // the stock exactly as written in Glide, so the website and the Glide app always read the same
+  const st = String(p.st || "").trim();
+  if(st && st !== "0"){ const cls = p.q === "enquire" || !(n > 0) ? (n > 0 || p.q === "enquire" ? "low" : "out") : (n < 20 ? "low" : "ok"); return {label: st, cls}; }
   if(p.q === "enquire") return {label:"Enquire to Reconfirm", cls:"low"};
   if(n <= 0) return {label:"No Stock", cls:"out"};
   if(n < 5)  return {label:"Enquire to Reconfirm", cls:"low"};
@@ -4269,8 +4272,8 @@ async function renderAdmin(){
       <select id="admR"><option value="trainer">trainer</option><option value="admin">admin</option></select><button class="tr-btn primary">Add account</button><span class="tr-msg" id="admMsg"></span></form>
     <p class="tr-msg">Each trainer gets ${users.daily} photos a day when they open this tab. A new account's temporary password is shown once, here, when you add it.</p>
     <h4>Catalogue feed</h4>
-    <p class="tr-msg">Products on this site: ${esc(String(feed.products||"-"))} (${esc(String(feed.indexed||"-"))} with fingerprints) · last built ${esc(feed.updated || feed.state || "")} · rebuilt nightly at 04:00.
-      <button class="tr-btn sm" onclick="admFeed()">Rebuild now</button></p>
+    <p class="tr-msg">Products on this site: ${esc(String(feed.products||"-"))} (${esc(String(feed.indexed||"-"))} with fingerprints) · last built ${esc(feed.updated || feed.state || "")} · stock refreshed from Glide at 12:30 and 17:30, full rebuild nightly at 04:00.
+      <button class="tr-btn sm" onclick="admStock()">Refresh stock now</button> <button class="tr-btn sm" onclick="admFeed()">Rebuild now</button></p>
     <h4>Central data (Analytics sheet tables)</h4>
     <div id="admCentral" class="tr-msg">Loading…</div>
     <h4>Design engine</h4>
@@ -4336,6 +4339,7 @@ async function admAdd(ev){ ev.preventDefault();
 async function admReset(u){ if(!confirm("Reset password for " + u + "?")) return; const j = await staffFetch("/admin/users/reset", {method:"POST", body: JSON.stringify({username:u})}); alert(j.status === "OK" ? `New temporary password for ${u}: ${j.password}` : j.status); }
 async function admRole(u, r){ await staffFetch("/admin/users/role", {method:"POST", body: JSON.stringify({username:u, role:r})}); renderAdmin(); }
 async function admRemove(u){ if(!confirm("Remove " + u + "? Their judgements stay.")) return; await staffFetch("/admin/users/remove", {method:"POST", body: JSON.stringify({username:u})}); renderAdmin(); }
+async function admStock(){ try{ const j = await staffFetch("/admin/stock-refresh", {method:"POST", body:"{}"}); toast(j.detail || j.state); }catch(e){ toast("Could not start the stock refresh"); } }
 async function admFeed(){ const j = await staffFetch("/admin/feed", {method:"POST", body:"{}"}); toast(j.state === "started" ? "Rebuilding the feed (about 2 minutes)" : (j.detail || j.state)); }
 /* ---- Admin: Site settings (brand, home, contact, announcement, themes, PDF) ---- */
 let SITE_DRAFT = null;

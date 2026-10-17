@@ -3425,6 +3425,15 @@ function fillSims(p){
   if(!box) return;
   const r = LIVE_RECS[p.sku] || (RECS || {})[p.sku];
   const pinned = (LIVE_RECS[p.sku] || {}).pinned || [];
+  if((!r || !(r.s || []).length && !(r.f || []).length) && (p.r || 0) > 0){
+    // the product HAS substitutes, they are just still loading (server busy): say so and try again, never "no fingerprint"
+    box.innerHTML = `<div class="pm-sim"><h3>Substitutes</h3><div class="pm-empty">Loading similar designs…</div></div>`;
+    p.__simTries = (p.__simTries || 0) + 1;
+    if(p.__simTries <= 6) setTimeout(() => {
+      fetch(API + "/recs/" + encodeURIComponent(p.sku)).then(x => x.ok ? x.json() : null).then(live => { if(live) LIVE_RECS[p.sku] = live; fillSims(p); }).catch(() => fillSims(p));
+    }, 5000);
+    return;
+  }
   if(!r || !(r.s || []).length && !(r.f || []).length){
     // no fingerprint yet (new product or picture just changed): show designs from the catalogue meanwhile
     const sameColl = PRODUCTS.filter(q => q.sku !== p.sku && q.c && q.c === p.c && (!state.inStock || inStockItem(q)));

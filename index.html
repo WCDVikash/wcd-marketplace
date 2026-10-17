@@ -1790,6 +1790,9 @@
   .sub-needbox input{width:84px;border:1px solid var(--sand-200,#EADFD0);border-radius:10px;padding:7px 9px;font:inherit;background:#fff}
   .sub-need{font-size:12.5px;font-weight:600;color:var(--ink,#17202A);margin-top:4px}
   .sub-other{font-size:12px;color:var(--ink-soft,#56636E);margin-top:2px}
+
+  .col-pop button{display:inline-flex;align-items:center;gap:6px}.col-pop button i{width:14px;height:14px;border-radius:50%;border:1px solid rgba(0,0,0,.15);display:inline-block}
+  .col-pop-act{display:flex;gap:8px;align-items:center;margin-top:10px}
 </style>
 </head>
 <body>
@@ -3351,7 +3354,8 @@ function renderProduct(sku){
       <h2>${esc(p.sku)}</h2>
       <div class="pm-chips">
         <span class="chip pchip" data-sku="${esc(p.sku)}">${esc(p.p) || "no pattern"}</span><button class="tag-fix staff-only" data-sku="${esc(p.sku)}" onclick="event.stopPropagation();tagFixOpen('${esc(p.sku)}', this)" title="Fix the pattern tag">✎ pattern</button>
-        ${(p.k||[]).map(c=>`<span class="chip sand" style="border:1px solid var(--sand-200)">${esc(c)}</span>`).join("")}
+        <span class="kchips" data-sku="${esc(p.sku)}">${(p.k||[]).map(c=>`<span class="chip sand" style="border:1px solid var(--sand-200)">${esc(c)}</span>`).join("") || `<span class="chip sand staff-only">no colours</span>`}</span><button class="tag-fix staff-only" onclick="event.stopPropagation();colourFixOpen('${esc(p.sku)}', this)" title="Fix the colours">✎ colour</button>
+        <button class="tag-fix staff-only" onclick="event.stopPropagation();fingerprintNow('${esc(p.sku)}')" title="Make the photo search, colours and substitutes use the current Image 1 (admin)">↻ fingerprint</button>
       </div>
       <div class="pm-rows">
         <div class="pm-row"><span>Product Type</span><span>${esc(p.t) || "-"}</span></div>
@@ -3370,7 +3374,8 @@ function renderProduct(sku){
    </div>
    <div id="pmSims"><div class="pm-empty">Finding similar designs…</div></div>`;
   el.closest(".pmodal-panel").scrollTop = 0;
-  ensureRecs().then(() => fillSims(p));
+  ensureRecs().then(() => fillSims(p)).catch(() => fillSims(p));
+  setTimeout(() => { const b = document.getElementById("pmSims"); if(b && /Finding similar/.test(b.textContent)) fillSims(p); }, 8000);   // never leave "Finding…" on screen
   fetch(API + "/recs/" + encodeURIComponent(p.sku)).then(r => r.ok ? r.json() : null).then(live => { if(live && pmStack[pmStack.length-1] === p.sku){ LIVE_RECS[p.sku] = live; fillSims(p); } }).catch(()=>{});
 }
 const LIVE_RECS = {};
@@ -3420,8 +3425,14 @@ function fillSims(p){
   if(!box) return;
   const r = LIVE_RECS[p.sku] || (RECS || {})[p.sku];
   const pinned = (LIVE_RECS[p.sku] || {}).pinned || [];
-  if(!r || (!r.s.length && !r.f.length)){
-    box.innerHTML = `<div class="pm-sim"><h3>Similar designs</h3><div class="pm-empty">No visual matches on file for this SKU yet.</div></div>`;
+  if(!r || !(r.s || []).length && !(r.f || []).length){
+    // no fingerprint yet (new product or picture just changed): show designs from the catalogue meanwhile
+    const sameColl = PRODUCTS.filter(q => q.sku !== p.sku && q.c && q.c === p.c && (!state.inStock || inStockItem(q)));
+    const samePat = p.p ? PRODUCTS.filter(q => q.sku !== p.sku && q.p === p.p && q.t === p.t && (!state.inStock || inStockItem(q))) : [];
+    const list = [...new Map([...sameColl, ...samePat].map(q => [q.sku, q])).values()].slice(0, 12).map(q => [q.sku, 0]);
+    box.innerHTML = `<div class="pm-sim"><h3>Similar designs</h3>
+      <div class="sub">This design has no fingerprint yet, so look-alike suggestions appear after the next catalogue sync (tonight, or Admin, Fingerprint this product now). Meanwhile: ${p.p ? "the same pattern and " : ""}other designs from the ${esc(p.c || "same")} collection.</div>
+      ${list.length ? simGrid(list, p.sku, []) : `<div class="pm-empty">Nothing else from this collection is in stock.</div>`}</div>`;
     return;
   }
   let html = "";
@@ -4005,8 +4016,43 @@ async function tagFixSave(sku, pattern){
     p.p = pattern; p.ts = "S"; try{ THEMES.dirty(); }catch(e){}
     document.querySelectorAll(`.pchip[data-sku="${CSS.escape(sku)}"]`).forEach(c => { c.textContent = pattern; c.classList.remove("staff-only"); });
     document.querySelectorAll(".tag-pop").forEach(e => e.remove());
-    toast(`${sku} → ${pattern}. On the website tonight.`);
+    toast(`${sku} → ${pattern}. Everyone sees it after the next refresh (12:30, 17:30 or tonight), or Admin, Rebuild now.`);
   }catch(e){ toast("Could not save"); }
+}
+/* ---- colour fix: staff pick up to 3 colours when the automatic ones are wrong (for example beige that is really white) ---- */
+function colourFixOpen(sku, btn){
+  if(!STAFF.user){ toast("Sign in as staff first"); return; }
+  document.querySelectorAll(".tag-pop").forEach(e => e.remove());
+  const p = byId.get(sku) || {}; const cur = new Set(p.k || []);
+  const pop = document.createElement("div"); pop.className = "tag-pop";
+  pop.innerHTML = `<b>${esc(sku)}</b><span>Pick up to 3 colours, main colour first. Now: ${esc((p.k || []).join(", ") || "none")}</span>
+    <div class="tag-pop-grid col-pop">${Object.keys(PARENT_HEX).map(c => `<button class="${cur.has(c) ? "on" : ""}" data-c="${esc(c)}" onclick="this.classList.toggle('on')"><i style="background:${PARENT_HEX[c]}"></i>${esc(c)}</button>`).join("")}</div>
+    <div class="col-pop-act"><button class="tr-btn sm primary" onclick="colourFixSave('${esc(sku)}', this)">Save colours</button><button class="tag-pop-close" onclick="this.closest('.tag-pop').remove()">Cancel</button></div>`;
+  document.body.appendChild(pop);
+  const r = btn.getBoundingClientRect(); const w = Math.min(460, window.innerWidth - 16), h = pop.offsetHeight || 380;
+  pop.style.width = w + "px";
+  pop.style.left = Math.max(8, Math.min(window.innerWidth - w - 8, r.left)) + "px";
+  pop.style.top = Math.max(8, (r.bottom + 8 + h > window.innerHeight ? r.top - h - 8 : r.bottom + 8)) + "px";
+}
+async function colourFixSave(sku, btn){
+  const pop = btn.closest(".tag-pop");
+  const picked = [...pop.querySelectorAll(".col-pop button.on")].map(b => b.dataset.c);
+  if(picked.length > 3){ toast("Pick at most 3 colours"); return; }
+  try{
+    const j = await staffFetch("/training/colourdecide", {method: "POST", body: JSON.stringify({sku, colours: picked})});
+    if(j.status !== "OK") throw new Error("not saved");
+    const p = byId.get(sku); if(p){ p.k = j.colours; }
+    document.querySelectorAll(`.kchips[data-sku="${CSS.escape(sku)}"]`).forEach(el => { el.innerHTML = j.colours.map(c => `<span class="chip sand" style="border:1px solid var(--sand-200)">${esc(c)}</span>`).join(""); });
+    pop.remove();
+    toast(`${sku}: ${j.colours.join(", ") || "colours cleared"}. Everyone sees it after the next refresh (12:30, 17:30 or tonight), or Admin, Rebuild now.`);
+  }catch(e){ toast("Could not save the colours"); }
+}
+/* ---- fingerprint one product now (admin): new product, or Image 1 changed in Glide ---- */
+async function fingerprintNow(sku){
+  if(!STAFF.user || STAFF.user.role !== "admin"){ toast("Admins only"); return; }
+  if(!sku){ toast("Type a product code"); return; }
+  try{ const j = await staffFetch("/admin/fingerprint", {method: "POST", body: JSON.stringify({sku})}); toast(j.detail || j.status); }
+  catch(e){ toast("Could not start: " + (e.message || e)); }
 }
 document.addEventListener("click", e => { if(!e.target.closest(".tag-pop") && !e.target.closest(".tag-fix")) document.querySelectorAll(".tag-pop").forEach(x => x.remove()); });
 /* ---- pattern review: where his tagger and our engine disagree, a person decides, with the picture in front of them ---- */
@@ -4322,6 +4368,9 @@ async function renderAdmin(){
     <h4>Central data (Analytics sheet tables)</h4>
     <div id="admCentral" class="tr-msg">Loading…</div>
     <h4>Design engine</h4>
+    <form class="tr-inline" onsubmit="event.preventDefault();fingerprintNow(document.getElementById('admFp').value.trim())">
+      <input id="admFp" placeholder="Product code, e.g. GN ASTRA 81398-1" style="min-width:260px"><button class="tr-btn primary">Fingerprint this product now</button>
+      <span class="tr-msg">For a new product or a changed Image 1: photo search, colours, pattern guess and substitutes update in about 3 to 5 minutes.</span></form>
     <div id="admService" class="tr-msg">Loading…</div>
     <h4>Site settings</h4>
     <p class="tr-msg">Changes here appear on every page of the website, in Sarah's links and on the PDF as soon as you press Save. Every save is kept in History below.</p>
@@ -4355,7 +4404,7 @@ async function renderService(){
       ${row("Disk", ov.disk && ov.disk.free_gb != null ? `${ov.disk.free_gb} GB free of ${ov.disk.total_gb} GB` : "-")}
     </table>
     <div class="tr-inline" style="margin-bottom:8px">
-      <button class="tr-btn sm" onclick="admAct('/review/api/admin/catalogue/sync','Catalogue sync started (about 10 minutes)')">Sync catalogue now</button>
+      <button class="tr-btn sm" onclick="admAct('/review/api/admin/catalogue/sync','Catalogue sync started: new products (newest first, up to 400) and changed pictures are fingerprinted, then the website updates by itself. 10 to 60 minutes.')">Sync catalogue now</button>
       <button class="tr-btn sm" onclick="admAct('/review/api/admin/linkcheck','Link check started: Image 1 to 8 and PDF links, about 30 minutes. The list appears in Downloads.')">Check image and PDF links</button>
       <button class="tr-btn sm" onclick="admAct('/review/api/admin/faq/sync','Knowledge sync started')">Sync knowledge PDFs</button>
       <button class="tr-btn sm" onclick="admAct('/review/api/admin/train','Training started')">Train ranking model</button>
